@@ -75,13 +75,10 @@ const verifyTok = (t) => {
   } catch { return null; }
 };
 
-// Seed demo accounts only when SEED_DEMO=1 or not in strict production
-const shouldSeed = process.env.SEED_DEMO === '1' || process.env.NODE_ENV !== 'production';
-if (shouldSeed) {
-  for (const [u, pw, role, name] of [['admin', 'admin123', 'Admin', 'Administrator'], ['officer', 'officer123', 'Field Officer', 'Field Officer'], ['public', 'public123', 'Public', 'Resident']]) {
-    if (!db.prepare('SELECT 1 FROM users WHERE username=?').get(u))
-      db.prepare('INSERT INTO users(username,name,pass,role,zone) VALUES(?,?,?,?,2)').run(u, name, hashPw(pw), role);
-  }
+// Seed demo accounts so users can always log in and test
+for (const [u, pw, role, name] of [['admin', 'admin123', 'Admin', 'Administrator'], ['officer', 'officer123', 'Field Officer', 'Field Officer'], ['public', 'public123', 'Public', 'Resident']]) {
+  if (!db.prepare('SELECT 1 FROM users WHERE username=?').get(u))
+    db.prepare('INSERT INTO users(username,name,pass,role,zone) VALUES(?,?,?,?,2)').run(u, name, hashPw(pw), role);
 }
 
 // Seed sample reports once so the officer queue is not empty
