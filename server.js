@@ -75,10 +75,14 @@ const verifyTok = (t) => {
   } catch { return null; }
 };
 
-// Seed demo accounts so users can always log in and test
+// Seed or sync demo accounts so demo credentials always work
 for (const [u, pw, role, name] of [['admin', 'admin123', 'Admin', 'Administrator'], ['officer', 'officer123', 'Field Officer', 'Field Officer'], ['public', 'public123', 'Public', 'Resident']]) {
-  if (!db.prepare('SELECT 1 FROM users WHERE username=?').get(u))
+  const existing = db.prepare('SELECT 1 FROM users WHERE username=?').get(u);
+  if (!existing) {
     db.prepare('INSERT INTO users(username,name,pass,role,zone) VALUES(?,?,?,?,2)').run(u, name, hashPw(pw), role);
+  } else {
+    db.prepare('UPDATE users SET pass=?, role=? WHERE username=?').run(hashPw(pw), role, u);
+  }
 }
 
 // Seed sample reports once so the officer queue is not empty
