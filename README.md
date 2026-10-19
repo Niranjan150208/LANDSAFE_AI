@@ -67,4 +67,37 @@ Only the fields you send are changed. The risk score is calculated in the browse
 
 ## Deploy
 
-Any host that runs Node 22 works (Render, Railway, Fly.io, a VPS). Start command: `node server.js`. Set `JWT_SECRET`, and put the database file on a persistent disk (`DB_PATH`). Serve it over HTTPS.
+LANDSAFE AI is ready for cloud deployment with zero external npm dependencies (requires Node 22.13+):
+
+### 1. Push to GitHub
+```bash
+git remote add origin https://github.com/<YOUR_USERNAME>/landsafe-ai.git
+git branch -M main
+git push -u origin main
+```
+
+### 2. Deploy on Render (Recommended)
+1. Go to [dashboard.render.com](https://dashboard.render.com) and click **New +** > **Web Service** (or **Blueprint** using [`render.yaml`](./render.yaml)).
+2. Connect your GitHub repository.
+3. Configure settings:
+   - **Environment:** `Node`
+   - **Build Command:** `node --version`
+   - **Start Command:** `node server.js`
+   - **Environment Variables:**
+     - `NODE_VERSION`: `22.13.0`
+     - `JWT_SECRET`: *(Generate or set a random 32+ char key)*
+4. Click **Deploy Web Service**.
+
+### 3. Deploy on Railway
+1. Go to [railway.app](https://railway.app) and select **New Project** > **Deploy from GitHub repo**.
+2. Railway will automatically detect the [`Procfile`](./Procfile) and [`Dockerfile`](./Dockerfile).
+3. Optional: Add a Persistent Volume mounted to `/data` and set `DB_PATH=/data/landsafe.db`.
+
+### 4. Deploy on Fly.io
+Using the bundled [`fly.toml`](./fly.toml):
+```bash
+fly launch
+fly volumes create landsafe_data --size 1
+fly deploy
+```
+
