@@ -6,6 +6,8 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const { makeSync } = require('./datasync');
+const scoring = require('./scoring');
+const ZONES = require('./zones.json');
 
 // ---- tiny .env loader -------------------------------------------------------
 try {
@@ -43,9 +45,14 @@ CREATE TABLE IF NOT EXISTS sms_log(
   id INTEGER PRIMARY KEY AUTOINCREMENT, to_phone TEXT NOT NULL, message TEXT NOT NULL,
   status TEXT NOT NULL, created TEXT DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS zone_metrics(
-  zone TEXT PRIMARY KEY, rain_mm_24h REAL, ndvi REAL, insar_mm REAL, slope_deg REAL,
-  elevation_m REAL, past_slides INTEGER, updated TEXT DEFAULT CURRENT_TIMESTAMP);
+  zone TEXT PRIMARY KEY, rain_mm_24h REAL, soil_pct REAL, ndvi REAL, insar_mm REAL, slope_deg REAL,
+  elevation_m REAL, past_slides INTEGER, risk_score INTEGER, risk_level TEXT, updated TEXT DEFAULT CURRENT_TIMESTAMP);
 `);
+
+// Safe migrations
+try { db.exec('ALTER TABLE zone_metrics ADD COLUMN soil_pct REAL'); } catch {}
+try { db.exec('ALTER TABLE zone_metrics ADD COLUMN risk_score INTEGER'); } catch {}
+try { db.exec('ALTER TABLE zone_metrics ADD COLUMN risk_level TEXT'); } catch {}
 
 const sync = makeSync(db);
 
@@ -68,12 +75,16 @@ const verifyTok = (t) => {
   } catch { return null; }
 };
 
-// seed demo accounts (same as the console's demo buttons)
-for (const [u, pw, role, name] of [['admin', 'admin123', 'Admin', 'Administrator'], ['officer', 'officer123', 'Field Officer', 'Field Officer'], ['public', 'public123', 'Public', 'Resident']]) {
-  if (!db.prepare('SELECT 1 FROM users WHERE username=?').get(u))
-    db.prepare('INSERT INTO users(username,name,pass,role,zone) VALUES(?,?,?,?,2)').run(u, name, hashPw(pw), role);
+// Seed demo accounts only when SEED_DEMO=1 or not in strict production
+const shouldSeed = process.env.SEED_DEMO === '1' || process.env.NODE_ENV !== 'production';
+if (shouldSeed) {
+  for (const [u, pw, role, name] of [['admin', 'admin123', 'Admin', 'Administrator'], ['officer', 'officer123', 'Field Officer', 'Field Officer'], ['public', 'public123', 'Public', 'Resident']]) {
+    if (!db.prepare('SELECT 1 FROM users WHERE username=?').get(u))
+      db.prepare('INSERT INTO users(username,name,pass,role,zone) VALUES(?,?,?,?,2)').run(u, name, hashPw(pw), role);
+  }
 }
-// seed sample reports once so the officer queue is not empty
+
+// Seed sample reports once so the officer queue is not empty
 if (!db.prepare('SELECT 1 FROM reports').get()) {
   db.prepare('INSERT INTO reports(zone,hazard,username) VALUES(8,?,?)').run('Rockfall', 'resident_gtk');
   db.prepare('INSERT INTO reports(zone,hazard,username) VALUES(5,?,?)').run('Water seepage', 'resident_cpj');
@@ -107,22 +118,87 @@ const readBody = (req) => new Promise((ok, no) => {
 const fmtTime = (s) => new Date(s.replace(' ', 'T') + 'Z').toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 const pro = (u) => u && (u.role === 'Admin' || u.role === 'Field Officer');
 const publicUser = (u) => ({ n: u.username, r: u.role, name: u.name, zone: u.zone, phone: u.phone });
-const attempts = new Map(); // naive login rate limit per ip
-const tooMany = (ip) => { const now = Date.now(), a = (attempts.get(ip) || []).filter((t) => now - t < 60000); a.push(now); attempts.set(ip, a); return a.length > 10; };
+
+// Rate limiting with client IP extraction (supporting x-forwarded-for) and automatic TTL pruning
+const attempts = new Map();
+const tooMany = (ip) => {
+  const now = Date.now();
+  const a = (attempts.get(ip) || []).filter((t) => now - t < 60000);
+  a.push(now);
+  attempts.set(ip, a);
+  return a.length > 10;
+};
+// Clean up expired rate-limit IP records every minute to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, timestamps] of attempts.entries()) {
+    const valid = timestamps.filter((t) => now - t < 60000);
+    if (valid.length === 0) attempts.delete(ip);
+    else attempts.set(ip, valid);
+  }
+}, 60000).unref();
 
 const rep = (r) => ({ id: 'LR-' + (1000 + r.id), dbid: r.id, zi: r.zone, hz: r.hazard, u: r.username, t: fmtTime(r.created), st: r.status });
-const chk = (c, zoneNames) => ({ id: c.id, t: fmtTime(c.created), u: c.username, zi: c.zone, k: c.kind, d: c.handled ? 1 : 0 });
+const chk = (c) => ({ id: c.id, t: fmtTime(c.created), u: c.username, zi: c.zone, k: c.kind, d: c.handled ? 1 : 0 });
+
+// ---- Server-Side Explainable Risk Scoring Engine -----------------------------
+function getZoneRisk(zoneNameOrIdx) {
+  let zIdx = -1, zConfig = null;
+  if (Number.isInteger(+zoneNameOrIdx) && +zoneNameOrIdx >= 0 && +zoneNameOrIdx < ZONES.length) {
+    zIdx = +zoneNameOrIdx;
+    zConfig = ZONES[zIdx];
+  } else {
+    zIdx = ZONES.findIndex((z) => z.name.toLowerCase() === String(zoneNameOrIdx).trim().toLowerCase());
+    if (zIdx >= 0) zConfig = ZONES[zIdx];
+  }
+  if (!zConfig) return null;
+
+  const m = db.prepare('SELECT * FROM zone_metrics WHERE zone=?').get(zConfig.name) || {};
+  const verifiedCount = db.prepare("SELECT COUNT(*) AS c FROM reports WHERE zone=? AND status='Verified'").get(zIdx)?.c || 0;
+
+  const evaluated = scoring.calculateRisk({
+    rain: m.rain_mm_24h != null ? m.rain_mm_24h : 25,
+    soil: m.soil_pct != null ? m.soil_pct : 45,
+    insar: m.insar_mm != null ? m.insar_mm : (m.slope_deg ? (m.slope_deg / 40) * 1.5 : 1.5),
+    ndvi: m.ndvi != null ? m.ndvi : 0.65,
+    sl: m.slope_deg != null ? m.slope_deg : 28,
+    h: m.past_slides != null ? m.past_slides : 2,
+    verifiedReports: verifiedCount,
+  });
+
+  return {
+    zone: zConfig.name,
+    zone_id: zIdx,
+    state: zConfig.state,
+    lat: zConfig.lat,
+    lon: zConfig.lon,
+    risk_score: evaluated.score,
+    level: evaluated.level,
+    level_idx: evaluated.levelIdx,
+    color: evaluated.color,
+    symbol: evaluated.symbol,
+    advice: evaluated.advice,
+    thresholds: evaluated.thresholds,
+    breakdown: evaluated.breakdown,
+    reasons: evaluated.reasons,
+    verified_reports_count: verifiedCount,
+  };
+}
+
+// 15-minute alert cooldown per zone to prevent spamming residents
+const ALERT_COOLDOWN_MS = 15 * 60 * 1000;
 
 // ---- routes -------------------------------------------------------------------
 async function api(req, res, url) {
-  const ip = req.socket.remoteAddress || '';
+  const xf = req.headers['x-forwarded-for'];
+  const ip = (xf ? String(xf).split(',')[0].trim() : req.socket.remoteAddress) || '127.0.0.1';
   const m = req.method, p = url.pathname;
   const tok = (req.headers.authorization || '').replace(/^Bearer /, '');
   const claims = verifyTok(tok);
   const me = claims ? db.prepare('SELECT * FROM users WHERE username=?').get(claims.u) : null;
   const need = (cond = true) => { if (!me) { json(res, 401, { error: 'Sign in required' }); return false; } if (!cond) { json(res, 403, { error: 'Not allowed for your role' }); return false; } return true; };
 
-  if (p === '/api/health') return json(res, 200, { ok: true, sms: !!process.env.TWILIO_ACCOUNT_SID ? 'twilio' : 'dry-run' });
+  if (p === '/api/health') return json(res, 200, { ok: true, sms: !!process.env.TWILIO_ACCOUNT_SID ? 'twilio' : 'dry-run', model: 'explainable-empirical-v1' });
 
   if (p === '/api/auth/login' && m === 'POST') {
     if (tooMany(ip)) return json(res, 429, { error: 'Too many attempts, wait a minute' });
@@ -145,6 +221,17 @@ async function api(req, res, url) {
     db.prepare('INSERT INTO users(username,name,pass,role,phone,zone) VALUES(?,?,?,?,?,?)').run(u, name.slice(0, 60), hashPw(pw), 'Public', ph, zone);
     const nu = db.prepare('SELECT * FROM users WHERE username=?').get(u);
     return json(res, 201, { token: sign({ u }), user: publicUser(nu) });
+  }
+
+  // Password change endpoint
+  if (p === '/api/auth/password' && (m === 'POST' || m === 'PATCH')) {
+    if (!need()) return;
+    const b = await readBody(req);
+    const oldPw = String(b.old_password || ''), newPw = String(b.new_password || '');
+    if (!checkPw(oldPw, me.pass)) return json(res, 401, { error: 'Current password is incorrect.' });
+    if (newPw.length < 8) return json(res, 400, { error: 'New password must be at least 8 characters.' });
+    db.prepare('UPDATE users SET pass=? WHERE username=?').run(hashPw(newPw), me.username);
+    return json(res, 200, { ok: true, message: 'Password updated successfully.' });
   }
 
   if (p === '/api/me' && m === 'GET') { if (!need()) return; return json(res, 200, { user: publicUser(me) }); }
@@ -190,7 +277,15 @@ async function api(req, res, url) {
     const b = await readBody(req);
     if (!['Verified', 'Dismissed'].includes(b.status)) return json(res, 400, { error: 'Bad status' });
     db.prepare('UPDATE reports SET status=? WHERE id=?').run(b.status, +mm[1]);
-    return json(res, 200, rep(db.prepare('SELECT * FROM reports WHERE id=?').get(+mm[1])));
+    const updatedRep = rep(db.prepare('SELECT * FROM reports WHERE id=?').get(+mm[1]));
+    
+    // Community loop: recalculate zone risk automatically on verification
+    const zoneRisk = getZoneRisk(updatedRep.zi);
+    if (zoneRisk) {
+      db.prepare('UPDATE zone_metrics SET risk_score=?, risk_level=?, updated=CURRENT_TIMESTAMP WHERE zone=?')
+        .run(zoneRisk.risk_score, zoneRisk.level, zoneRisk.zone);
+    }
+    return json(res, 200, { ...updatedRep, updated_zone_risk: zoneRisk });
   }
 
   // check-ins ("I'm safe" / "I need help")
@@ -222,6 +317,20 @@ async function api(req, res, url) {
     const b = await readBody(req);
     const zone = +b.zone, level = +b.level, msg = String(b.message || '').slice(0, 300);
     if (!Number.isInteger(zone) || ![0, 1, 2, 3].includes(level) || !msg) return json(res, 400, { error: 'zone, level (0-3) and message required' });
+    
+    // Alert Cooldown: enforce 15-min cooldown per zone for high/critical alerts unless forced by Admin
+    const force = b.force === true && me.role === 'Admin';
+    if (!force && level >= 2) {
+      const lastAlert = db.prepare('SELECT created FROM alerts WHERE zone=? AND level>=2 ORDER BY id DESC LIMIT 1').get(zone);
+      if (lastAlert) {
+        const elapsed = Date.now() - new Date(lastAlert.created.replace(' ', 'T') + 'Z').getTime();
+        if (elapsed < ALERT_COOLDOWN_MS) {
+          const waitMin = Math.ceil((ALERT_COOLDOWN_MS - elapsed) / 60000);
+          return json(res, 429, { error: `Alert cooldown active for zone ${zone}. Please wait ${waitMin} min before sending again.` });
+        }
+      }
+    }
+
     db.prepare('INSERT INTO alerts(zone,level,message,by_user) VALUES(?,?,?,?)').run(zone, level, msg, me.username);
     const subs = level >= 2 ? db.prepare("SELECT phone FROM users WHERE zone=? AND phone<>''").all(zone) : [];
     const results = [];
@@ -229,9 +338,9 @@ async function api(req, res, url) {
     return json(res, 201, { ok: true, texted: subs.length, results });
   }
 
-  // compatibility with the console's "SMS backend URL" box
+  // compatibility with the console's "SMS backend URL" box (Restricted to Admin for security)
   if (p === '/send' && m === 'POST') {
-    if (!need(pro(me))) return;
+    if (!need(me && me.role === 'Admin')) return;
     const b = await readBody(req);
     if (!/^\+\d{10,15}$/.test(String(b.to || '')) || !b.message) return json(res, 400, { error: 'to (+countrycode) and message required' });
     const status = await sendSms(b.to, String(b.message).slice(0, 300));
@@ -240,6 +349,45 @@ async function api(req, res, url) {
   if (p === '/api/sms' && m === 'GET') {
     if (!need(me && me.role === 'Admin')) return;
     return json(res, 200, db.prepare('SELECT * FROM sms_log ORDER BY id DESC LIMIT 50').all());
+  }
+
+  // Server-side Risk Evaluation Endpoint
+  if (p === '/api/risk' && m === 'GET') {
+    const list = ZONES.map((_, i) => getZoneRisk(i)).filter(Boolean);
+    return json(res, 200, list);
+  }
+  if ((mm = p.match(/^\/api\/risk\/(\d+)$/)) && m === 'GET') {
+    const r = getZoneRisk(+mm[1]);
+    if (!r) return json(res, 404, { error: 'Zone not found' });
+    return json(res, 200, r);
+  }
+
+  // Model Explainability & NASA GLC Backtest Results
+  if (p === '/api/backtest' && m === 'GET') {
+    return json(res, 200, scoring.runBacktest());
+  }
+
+  // Real Sensor Ingestion Endpoint (ESP32 LoRa / Gateway Telemetry)
+  if (p === '/api/telemetry' && m === 'POST') {
+    const b = await readBody(req);
+    const zIdx = +b.zone_id;
+    if (!Number.isInteger(zIdx) || zIdx < 0 || zIdx >= ZONES.length) return json(res, 400, { error: 'Valid zone_id (0-15) required' });
+    const zoneName = ZONES[zIdx].name;
+    const soil = b.soil_pct != null ? Math.max(0, Math.min(100, +b.soil_pct)) : null;
+    const rain = b.rain_mm != null ? Math.max(0, +b.rain_mm) : null;
+    
+    db.prepare(`INSERT INTO zone_metrics(zone, soil_pct, rain_mm_24h, updated) VALUES(?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(zone) DO UPDATE SET
+        soil_pct=COALESCE(excluded.soil_pct, soil_pct),
+        rain_mm_24h=COALESCE(excluded.rain_mm_24h, rain_mm_24h),
+        updated=CURRENT_TIMESTAMP`).run(zoneName, soil, rain);
+
+    const evaluated = getZoneRisk(zIdx);
+    if (evaluated) {
+      db.prepare('UPDATE zone_metrics SET risk_score=?, risk_level=?, updated=CURRENT_TIMESTAMP WHERE zone=?')
+        .run(evaluated.risk_score, evaluated.level, zoneName);
+    }
+    return json(res, 200, { ok: true, node: b.node_id || 'node', zone: zoneName, risk: evaluated });
   }
 
   if (p === '/api/datasources' && m === 'GET') return json(res, 200, sync.statusRows());
@@ -251,7 +399,7 @@ async function api(req, res, url) {
 
   // satellite / GIS feed the console can load (Sources page -> Feed URL). Admin uploads rows, everyone's console reads them.
   if ((p === '/api/zone_metrics.json' || p === '/zone_metrics.json') && m === 'GET')
-    return json(res, 200, db.prepare('SELECT zone,rain_mm_24h,soil_pct,ndvi,insar_mm,slope_deg,elevation_m,past_slides FROM zone_metrics').all());
+    return json(res, 200, db.prepare('SELECT zone,rain_mm_24h,soil_pct,ndvi,insar_mm,slope_deg,elevation_m,past_slides,risk_score,risk_level FROM zone_metrics').all());
   if (p === '/api/zone_metrics' && m === 'PUT') {
     if (!need(me && me.role === 'Admin')) return;
     const rows = await readBody(req);

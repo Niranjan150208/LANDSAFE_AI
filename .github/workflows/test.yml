@@ -1,0 +1,26 @@
+name: Tests and Quality Gate
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js 22
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Run Unit, RBAC, and Integration Tests
+      run: node --no-warnings test.js
+
+    - name: Run Data Synchronization Tests
+      run: node --no-warnings test-sync.js
