@@ -2,6 +2,8 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>LANDSAFE AI – Sensors, Satellite and GIS Console</title>
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="apple-touch-icon" href="/logo.png">
 <style>
 :root {
   --bg: #090e17;
@@ -124,27 +126,24 @@ aside {
 }
 
 .logo {
-  padding: 0 8px 18px;
+  padding: 0 4px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   margin-bottom: 16px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
-.logo-icon {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--pa), var(--pb));
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  font-size: 15px;
-  color: #fff;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+.logo-img {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+  border: 1px solid rgba(56, 189, 248, 0.3);
   flex-shrink: 0;
 }
 .logo-text b {
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 700;
   letter-spacing: 0.6px;
   color: #fff;
@@ -154,7 +153,7 @@ aside {
 .logo-text small {
   display: block;
   color: var(--mu);
-  font-size: 11px;
+  font-size: 10.5px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -673,8 +672,23 @@ tr.k:hover { background: var(--sf); }
   background: linear-gradient(145deg, #10192b, #0c1424);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
 }
+.lg-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.lg-logo-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+  border: 1.5px solid rgba(56, 189, 248, 0.35);
+  flex-shrink: 0;
+}
 #lg h2 {
-  margin: 0 0 6px;
+  margin: 0;
   font-size: 22px;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -822,7 +836,7 @@ tr.k:hover { background: var(--sf); }
   .ar-g2e, .ar-split { grid-template-columns: 1fr; }
 }
 </style></head><body data-pg="dash">
-<div class="app"><aside><div class="logo"><div class="logo-icon">▲</div><div class="logo-text"><b>LANDSAFE AI</b><small>North East India</small></div></div><nav id="nav"></nav><div class="who" id="who"></div></aside>
+<div class="app"><aside><div class="logo"><img src="/logo.png" alt="LANDSAFE AI Logo" class="logo-img"><div class="logo-text"><b>LANDSAFE AI</b><small>North East India</small></div></div><nav id="nav"></nav><div class="who" id="who"></div></aside>
 <main>
 <div class="card top" id="topb">
 <label for="storm">Storm intensity <b id="sv">0%</b></label><input id="storm" type="range" min="0" max="100" value="0">
@@ -831,7 +845,7 @@ tr.k:hover { background: var(--sf); }
 </div>
 <div id="pg"></div>
 </main></div>
-<div id="lg"><div class="card"><h2>LANDSAFE AI</h2><div class="note" style="margin:0 0 14px">North East India · Landslide Early-Warning Console</div>
+<div id="lg"><div class="card"><div class="lg-brand"><img src="/logo.png" alt="LANDSAFE AI Logo" class="lg-logo-img"><div><h2 style="margin:0 0 2px">LANDSAFE AI</h2><div class="note" style="margin:0">North East India · Early-Warning Console</div></div></div>
 <div class="row" style="margin-bottom:12px"><button class="b" type="button" id="t1" aria-pressed="true" onclick="tab(1)">Sign in</button><button class="b" type="button" id="t2" aria-pressed="false" onclick="tab(2)">Create account</button></div>
 <form id="lf"><label for="lu">Username</label><input id="lu" autocomplete="username"><label for="lp">Password</label><input id="lp" type="password" autocomplete="current-password"><div class="err" id="le" role="alert"></div><button class="b p" style="width:100%">Sign in</button></form>
 <form id="sf" style="display:none"><label for="sn">Full name</label><input id="sn" autocomplete="name"><label for="su">Username (letters, numbers, underscore)</label><input id="su" autocomplete="username"><label for="sp">Password (at least 8 characters)</label><input id="sp" type="password" autocomplete="new-password"><label for="sph">Phone with country code (optional)</label><input id="sph" inputmode="tel" placeholder="+91XXXXXXXXXX"><label for="sz">My home area</label><select id="sz"></select><div class="err" id="se" role="alert"></div><button class="b p" style="width:100%">Create account</button></form>
