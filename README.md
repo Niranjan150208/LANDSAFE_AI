@@ -89,28 +89,29 @@ The model was backtested against **142 historical landslide events** recorded in
 
 ## 🏗️ Technical Architecture & Zero-Dependency Backend
 
+
 ```mermaid
 flowchart TD
-    subgraph Data Sources
-        S1[Sentinel-1 InSAR SAR]
-        S2[Sentinel-2 NDVI Optical]
-        DEM[Copernicus DEM 30m GLO-90]
-        GPM[Open-Meteo & GPM Precipitation]
-        IoT[ESP32-S3 LoRa Soil Sensors]
-        CIT[Citizen Hazard Reports]
+    subgraph DS["Data Sources"]
+        S1["Sentinel-1 InSAR SAR"]
+        S2["Sentinel-2 NDVI Optical"]
+        DEM["Copernicus DEM 30m GLO-90"]
+        GPM["Open-Meteo & GPM Precipitation"]
+        IoT["ESP32-S3 LoRa Soil Sensors"]
+        CIT["Citizen Hazard Reports"]
     end
 
-    subgraph LANDSAFE Core (Node 22+)
-        AUTH[Scrypt Auth & Role RBAC]
-        MODEL[Explainable Physics Model]
-        DB[(SQLite WAL Persistence)]
-        CD[15-min Zone Alert Cooldown]
+    subgraph LC["LANDSAFE Core (Node 22+)"]
+        AUTH["Scrypt Auth & Role RBAC"]
+        MODEL["Explainable Physics Model"]
+        DB[("SQLite WAL Persistence")]
+        CD["15-min Zone Alert Cooldown"]
     end
 
-    subgraph Dissemination
-        UI[Universal Web App / Low-BW Mode]
-        SMS[Twilio / Telecom Bulk SMS Gateway]
-        DISP[DDMA Command Center]
+    subgraph DIS["Dissemination"]
+        UI["Universal Web App / Low-BW Mode"]
+        SMS["Twilio / Telecom Bulk SMS Gateway"]
+        DISP["DDMA Command Center"]
     end
 
     S1 & S2 & DEM & GPM & IoT & CIT --> MODEL
