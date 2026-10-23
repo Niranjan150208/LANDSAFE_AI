@@ -132,38 +132,62 @@ flowchart TD
 
 ---
 
-## 💰 Feasibility & Pilot Deployment Plan
+## 💻 Software Feasibility & Pilot Deployment Plan
 
-### Hardware Bill of Materials (BOM) per Zone (3 Nodes)
+### 1. Software Feasibility
 
-| Component | Specification | Unit Cost (USD) | Qty / Zone | Total |
-|---|---|---|---|---|
-| **IoT Sensor Node** | ESP32-S3 + SX1262 LoRa (868/865 MHz) | $18.00 | 3 | $54.00 |
-| **Capacitive Soil Probe** | V2.0 Corrosion-resistant waterproof | $7.00 | 3 | $21.00 |
-| **Solar Power Unit** | 5V 2W Monocrystalline + 18650 LiFePO4 | $9.00 | 3 | $27.00 |
-| **Rain Gauge** | Optical / Tipping-bucket mini gauge | $14.00 | 1 | $14.00 |
-| **Enclosure & Mount** | IP67 UV-stabilized pole mount | $8.00 | 3 | $24.00 |
-| **Subtotal per Zone** | | | | **~$140.00** |
-| **Shared Gateway** | 8-Channel Outdoor LoRaWAN Gateway (covers 5–10 km radius, shared across 3–5 zones) | $95.00 | 0.25 | ~$24.00 |
-| **Total Hardware Cost** | | | | **~$164.00 / zone** |
+LANDSAFE AI has a deployed web prototype hosted on Render, demonstrating the feasibility of browser-based access to the application.
 
-### Operational SMS Budget
-- **Cost per SMS:** ~$0.012 to $0.015 (bulk Indian telecom / Twilio route).
-- **Annual SMS Budget:** For a typical hill town of 2,500 registered heads of household across 10 monsoon warning events per season: **~$350 / year**.
+- **Prototype:** https://landsafe-ai-paap.onrender.com/
+- **Source Code:** https://github.com/Niranjan150208/LANDSAFE_AI
+- **Hosting:** Render
+- **Version Control:** GitHub
+- **Environmental Data:** Public rainfall, terrain and satellite datasets, subject to integration and availability.
+- **Risk Assessment:** Explainable landslide-risk analysis requiring validation.
+- **Future Enhancements:** Validated data pipelines, persistent storage, alert integrations and optional IoT sensors.
 
-### Who Uses LANDSAFE AI?
-1. **District Disaster Management Authorities (DDMA):** Real-time situational awareness, alert dispatch, and shelter activation.
-2. **SDRF & First Responders:** Prioritized incident dispatch based on citizen check-ins (*"🆘 I Need Help"*).
-3. **Field Engineers & Officers:** Verification of cracks, slope seepage, and road blockages.
-4. **Vulnerable Residents & Commuters:** Early localized warnings in their mother tongue before highways are severed.
+### 2. Pilot Deployment Plan
 
-### SQLite Persistence Plan
-- **Production Mode:** SQLite in `WAL` (Write-Ahead Logging) mode with `PRAGMA synchronous = NORMAL`.
-- **Persistent Volume Mount:** In container environments (Docker, Render, Railway, Fly.io), mount a persistent disk to `/data` and set `DB_PATH=/data/landsafe.db`.
-- **Zero Data-Loss Backups:** Integration with [Litestream](https://litestream.io) for continuous streaming replication to any S3-compatible cloud storage.
+| Phase | Activities | Expected Outcome |
+|---|---|---|
+| 1. Prototype Testing | Test navigation, inputs, outputs and core workflows | Functional test report |
+| 2. Data Integration | Integrate suitable environmental and geospatial datasets | Documented data pipeline |
+| 3. Model Validation | Compare risk assessments with historical landslide records | Model evaluation report |
+| 4. Dashboard Testing | Verify visualizations, explanations and timestamps | Validated dashboard workflow |
+| 5. Alert Simulation | Test thresholds, cooldown logic and notifications | Alert testing report |
+| 6. Controlled Pilot | Evaluate a selected region and gather stakeholder feedback | Pilot evaluation and improvement plan |
 
----
+### 3. Estimated Software Operating Budget
 
+*Preliminary planning estimates; actual prices depend on providers, usage and deployment requirements.*
+
+| Expense | Estimated Cost |
+|---|---:|
+| GitHub | ₹0 initially |
+| Render hosting | ₹0–₹2,000/month |
+| Public environmental datasets | ₹0 initially, subject to access limits |
+| Database and storage | ₹0–₹1,000/month |
+| Optional custom domain | ₹800–₹1,500/year |
+| SMS and notification services | Usage-dependent |
+
+**Indicative budget:** ₹0–₹3,000/month, excluding optional domain registration and usage-based notification costs. These estimates are not verified quotations.
+
+### 4. Pilot Success Metrics
+
+- **Functional reliability:** Successful completion of core application workflows.
+- **Data reliability:** Data freshness, completeness and source availability.
+- **Model performance:** Precision, recall and false-alarm rate against historical records.
+- **System performance:** Response time, uptime and dashboard loading speed.
+- **Alert reliability:** Notification delivery success and latency.
+- **Usability:** Feedback from intended users and disaster-management stakeholders.
+
+### 5. Deployment Safety and Limitations
+
+LANDSAFE AI is a research and hackathon prototype, not a certified public-warning system. Hosting the application demonstrates accessibility but does not establish the accuracy of its risk assessments or readiness for emergency use.
+
+Before a field pilot, the system must be tested with reliable regional data, independently evaluated and reviewed by relevant experts. Simulated observations must be distinguished from live measurements, and missing or outdated data must not be presented as evidence that an area is safe.
+
+LANDSAFE AI is intended to support, not replace, official warnings and professional disaster-management decisions.
 ## ⚠️ Honest Technical Limitations
 
 1. **Satellite Revisit Latency:** Sentinel-1 radar passes every 6 to 12 days. Rapid slope saturation from localized cloudbursts between satellite passes is caught by ground LoRa nodes and Open-Meteo precipitation feeds.
