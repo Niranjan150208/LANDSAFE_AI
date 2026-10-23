@@ -25,13 +25,15 @@ By combining **in-situ LoRa soil-moisture nodes**, **Sentinel-1 InSAR surface di
 
 ## 📸 Interface & User Experience
 
+
 <div align="center">
-  <img src="public/screenshots/command_center.jpg" alt="Command Center UI" width="800" style="border-radius: 12px; margin-bottom: 16px;" />
-  <p><i>Command Center: Real-time sensor telemetry, Sentinel-1 InSAR deformation, GIS terrain fusion, and 1-click simulation.</i></p>
-  <br />
-  <img src="public/screenshots/citizen_mobile.jpg" alt="Citizen Mobile UI" width="400" style="border-radius: 12px; margin-bottom: 16px;" />
-  <p><i>Resident View: Colorblind-safe warning badges, multi-language advisories, and instant "I'm Safe" / "🆘 I Need Help" check-ins.</i></p>
+  <img src="public/screenshots/Screenshot 2026-10-23 204409.png"
+       alt="LANDSAFE AI Risk Map GIS Dashboard"
+       width="100%" />
+
+  <p><i>LANDSAFE AI Risk Map: GIS and satellite visualization, zone-level risk scores, environmental indicators, soil sensor telemetry, and landslide-risk analysis.</i></p>
 </div>
+
 
 ### Key UI/UX Innovations
 - **Colorblind-Safe Design:** Risk levels (`bd-low`, `bd-moderate`, `bd-high`, `bd-critical`) combine accessible color palettes with distinct geometric glyphs (`●`, `▲`, `■`, `✖`) and textual labels for high-glare outdoor sunlight conditions.
