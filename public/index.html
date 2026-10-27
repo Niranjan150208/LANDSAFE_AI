@@ -4,880 +4,352 @@
 <title>LANDSAFE AI – Sensors, Satellite and GIS Console</title>
 <link rel="icon" type="image/png" href="/logo.png">
 <link rel="apple-touch-icon" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Public+Sans:wght@400;500;600;700&display=swap">
+<meta name="theme-color" content="#0a0f0d">
 <style>
+/* LANDSAFE AI — night survey sheet.
+   Colour is reserved for risk (--r0..--r3). Everything else is mineral neutral. */
 :root {
-  --bg: #090e17;
-  --card: #111a2e;
-  --card-glass: rgba(17, 26, 46, 0.85);
-  --tx: #f8fafc;
-  --mu: #94a3b8;
-  --bd: #1e2c47;
-  --ac: #0ea5e9;
-  --sf: #152238;
-  --nav: #070c14;
-  --pa: #0284c7;
-  --pb: #38bdf8;
-  --core: #ef4444;
-  --buf: #f59e0b;
-  --ok: #10b981;
-  --gr: #64748b;
-  --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
-  --radius: 12px;
-  box-sizing: border-box;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #0e1311;
+  --card: #141b18;
+  --card-glass: rgba(20, 27, 24, 0.9);
+  --sf: #1a2420;
+  --bd: #27332e;
+  --bd2: #3a4a42;
+  --tx: #e8ece5;
+  --mu: #96a79d;
+  --ink: #e8ece5;
+  --ink-tx: #0e1311;
+  --ac: #72bccd;
+  --pa: #72bccd;
+  --pb: #72bccd;
+  --nav: #0a0f0d;
+  --r0: #62d39c; --r1: #f2c744; --r2: #ff9a52; --r3: #ff6b63;
+  --core: #ff6b63; --buf: #f2c744; --ok: #62d39c; --gr: #6c7d73;
+  --radius: 8px;
+  --shadow: none;
+  --shadow-lg: none;
+  --display: "Bricolage Grotesque", "Public Sans", system-ui, sans-serif;
+  --body: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
 }
-
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
-    --bg: #f4f6fa;
-    --card: #ffffff;
-    --card-glass: rgba(255, 255, 255, 0.9);
-    --tx: #0f172a;
-    --mu: #64748b;
-    --bd: #e2e8f0;
-    --ac: #0284c7;
-    --sf: #edf2f7;
-    --nav: #0f172a;
-    --pa: #0284c7;
-    --pb: #0ea5e9;
-    --core: #dc2626;
-    --buf: #d97706;
-    --ok: #059669;
-    --gr: #94a3b8;
-    --shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.12);
+    --bg: #e9eeea; --card: #f7f9f6; --card-glass: rgba(247,249,246,.92); --sf: #e0e8e3;
+    --bd: #cbd7d0; --bd2: #a9bab0; --tx: #101814; --mu: #53645a;
+    --ink: #101814; --ink-tx: #f7f9f6; --ac: #1b6f84; --pa: #1b6f84; --pb: #1b6f84;
+    --r0: #0d7a4b; --r1: #7d5a00; --r2: #a94603; --r3: #b0201a; --contour: .75;
+    --core: #b0201a; --buf: #7d5a00; --ok: #0d7a4b; --gr: #6f8077;
+    color-scheme: light;
   }
 }
 :root[data-theme="light"] {
-  --bg: #f4f6fa;
-  --card: #ffffff;
-  --card-glass: rgba(255, 255, 255, 0.9);
-  --tx: #0f172a;
-  --mu: #64748b;
-  --bd: #e2e8f0;
-  --ac: #0284c7;
-  --sf: #edf2f7;
-  --nav: #0f172a;
-  --pa: #0284c7;
-  --pb: #0ea5e9;
-  --core: #dc2626;
-  --buf: #d97706;
-  --ok: #059669;
-  --gr: #94a3b8;
-  --shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.12);
+  --bg: #e9eeea; --card: #f7f9f6; --card-glass: rgba(247,249,246,.92); --sf: #e0e8e3;
+  --bd: #cbd7d0; --bd2: #a9bab0; --tx: #101814; --mu: #53645a;
+  --ink: #101814; --ink-tx: #f7f9f6; --ac: #1b6f84; --pa: #1b6f84; --pb: #1b6f84;
+  --r0: #0d7a4b; --r1: #7d5a00; --r2: #a94603; --r3: #b0201a; --contour: .75;
+  --core: #b0201a; --buf: #7d5a00; --ok: #0d7a4b; --gr: #6f8077;
+  color-scheme: light;
 }
-:root[data-theme="dark"] {
-  --bg: #090e17;
-  --card: #111a2e;
-  --card-glass: rgba(17, 26, 46, 0.85);
-  --tx: #f8fafc;
-  --mu: #94a3b8;
-  --bd: #1e2c47;
-  --ac: #0ea5e9;
-  --sf: #152238;
-  --nav: #070c14;
-  --pa: #0284c7;
-  --pb: #38bdf8;
-  --core: #ef4444;
-  --buf: #f59e0b;
-  --ok: #10b981;
-  --gr: #64748b;
-}
-
-body[data-pg=map]{--pa:#0d9488;--pb:#2dd4bf}
-body[data-pg=sens]{--pa:#0284c7;--pb:#38bdf8}
-body[data-pg=sat]{--pa:#7c3aed;--pb:#a78bfa}
-body[data-pg=alerts]{--pa:#ea580c;--pb:#fb923c}
-body[data-pg=rng]{--pa:#ef4444;--pb:#f87171}
-body[data-pg=rep]{--pa:#65a30d;--pb:#a3e635}
-body[data-pg=src],body[data-pg=set]{--pa:#475569;--pb:#94a3b8}
 
 * { box-sizing: border-box; }
-html { scroll-padding-top: env(safe-area-inset-top, 0px); font-size: 14px; }
+html { font-size: 15px; scroll-padding-top: env(safe-area-inset-top, 0px); }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--tx);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--body);
   line-height: 1.5;
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+h1, h2, h3 { font-family: var(--display); }
+a { color: var(--ac); text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
 
-.app {
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  min-height: 100vh;
-}
+.app { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; }
 
-/* Sidebar navigation */
+/* ---------- Sidebar ---------- */
 aside {
   background: var(--nav);
-  border-right: 1px solid var(--bd);
-  padding: 20px 14px;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+  border-right: 1px solid #1d2723;
+  padding: 20px 12px 16px;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  display: flex; flex-direction: column;
+  color: #e8ece5;
 }
+.logo { display: flex; align-items: center; gap: 11px; padding: 0 6px 18px; margin-bottom: 14px; border-bottom: 1px solid #1d2723; }
+.logo-img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; flex-shrink: 0; border: 1px solid #2b3a33; }
+.logo-text b { display: block; font-family: var(--display); font-size: 16px; font-weight: 700; letter-spacing: .02em; line-height: 1.15; color: #f1f4ee; }
+.logo-text small { display: block; margin-top: 2px; font-size: 12px; color: #8a9b91; }
 
-.logo {
-  padding: 0 4px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.logo-img {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  object-fit: cover;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  flex-shrink: 0;
-}
-.logo-text b {
-  font-size: 15.5px;
-  font-weight: 700;
-  letter-spacing: 0.6px;
-  color: #fff;
-  display: block;
-  line-height: 1.2;
-}
-.logo-text small {
-  display: block;
-  color: var(--mu);
-  font-size: 10.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-}
+nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
 nav button {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-  align-items: center;
-  border: 0;
-  background: transparent;
-  color: var(--mu);
-  padding: 10px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 13.5px;
-  font-weight: 500;
-  text-align: left;
-  transition: all 0.15s ease;
-  position: relative;
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  border: 0; background: transparent; color: #9fb0a6;
+  padding: 9px 10px; border-radius: 6px; cursor: pointer;
+  font: 500 14px/1.2 var(--body); text-align: left;
+  position: relative; transition: background .12s, color .12s;
 }
-nav button:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-}
-nav button.on {
-  background: linear-gradient(90deg, rgba(56, 189, 248, 0.15), rgba(56, 189, 248, 0.03));
-  color: #fff;
-  font-weight: 600;
-  box-shadow: inset 3px 0 0 var(--pb);
-}
-nav i {
-  font-style: normal;
-  width: 20px;
-  text-align: center;
-  font-size: 15px;
-  opacity: 0.9;
-}
+nav button:hover { background: #151e1a; color: #f1f4ee; }
+nav button.on { background: #1a2520; color: #f1f4ee; font-weight: 600; }
+nav button.on::before { content: ""; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #e8ece5; }
+nav i { display: grid; place-items: center; width: 20px; height: 20px; font-style: normal; flex-shrink: 0; }
+nav i svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 
-.who {
-  margin-top: auto;
-  padding: 14px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
-  font-size: 12px;
-  color: var(--mu);
-}
-.who b { color: var(--tx); }
-.who .b {
-  margin-top: 8px;
-  width: 100%;
-  background: transparent;
-  border: 1px solid var(--bd);
-  color: var(--tx);
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 6px;
-}
-.who .b:hover {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: #ef4444;
-  color: #fca5a5;
-}
+.who { margin-top: 18px; padding: 12px; border: 1px solid #1d2723; border-radius: 8px; font-size: 13px; color: #8a9b91; line-height: 1.45; }
+.who b { color: #f1f4ee; font-weight: 600; }
+.who .b { margin-top: 10px; width: 100%; min-height: 34px; background: transparent; border-color: #2b3a33; color: #e8ece5; }
+.who .b:hover { background: #1a2520; border-color: #4a5d53; }
 
-/* Main workspace */
-main {
-  padding: 18px 24px 40px;
-  min-width: 0;
-}
+/* ---------- Workspace ---------- */
+main { padding: 20px 28px 48px; min-width: 0; max-width: 1280px; }
 
-/* Card base */
 .card {
   background: var(--card);
   border: 1px solid var(--bd);
   border-radius: var(--radius);
-  padding: 16px 18px;
+  padding: 18px 20px;
   position: relative;
-  box-shadow: var(--shadow);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.card h3 {
-  margin: 0 0 12px;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.2px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.card h3 { margin: 0 0 12px; font-size: 16px; font-weight: 600; letter-spacing: -.005em; display: flex; align-items: center; gap: 8px; }
+.card + .card, .g + .card { margin-top: 0; }
 
-/* Top control header */
+/* Scenario bar (storm simulator + data toggles) */
 .top {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-  align-items: center;
-  margin-bottom: 16px;
-  background: linear-gradient(135deg, var(--card), var(--sf));
-  border: 1px solid var(--bd);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
+  padding: 10px 14px; margin-bottom: 16px;
+  background: var(--card); border: 1px solid var(--bd);
 }
-.top label {
-  font-weight: 600;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.top label { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.top label b { min-width: 3.2ch; font-family: var(--display); font-size: 18px; font-weight: 700; color: var(--tx); }
+.top input[type=range] { width: 120px; }
+.top .b[aria-pressed] { min-height: 32px; padding: 4px 9px; font-size: 13px; }
+.top .b[aria-pressed]::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; display: inline-block;
+  border: 1.5px solid var(--mu); background: transparent; vertical-align: 1px;
 }
-.top label b {
-  color: var(--ac);
-  font-family: ui-monospace, "SF Mono", monospace;
-  font-size: 14px;
-}
-.top input[type=range] {
-  width: 160px;
-  accent-color: var(--ac);
-  cursor: pointer;
-}
+.top .b[aria-pressed=true]::before { background: var(--r0); border-color: var(--r0); }
+.top .b[aria-pressed=true] { background: var(--sf); border-color: var(--bd2); color: var(--tx); font-weight: 500; }
 
-/* Grids & layouts */
+/* Range slider: track shows the four risk levels the storm will push zones through */
+input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; height: 24px; cursor: pointer; accent-color: var(--ac); }
+input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--r0), var(--r1) 45%, var(--r2) 70%, var(--r3)); opacity: .85; }
+input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--r0), var(--r1) 45%, var(--r2) 70%, var(--r3)); opacity: .85; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: var(--tx); border: 3px solid var(--bg); box-shadow: 0 0 0 1.5px var(--tx); }
+input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--tx); border: 3px solid var(--bg); box-shadow: 0 0 0 1.5px var(--tx); }
+
+/* ---------- Grids ---------- */
 .g { display: grid; gap: 14px; margin-bottom: 14px; }
-.g4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-.g3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-.split { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr); gap: 14px; }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+/* Key figures read as one joined strip, not four separate cards */
+.g4 { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1px; background: var(--bd); border: 1px solid var(--bd); border-radius: var(--radius); overflow: hidden; }
+.g4 > .card { border: 0; border-radius: 0; }
+.split { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr); gap: 14px; align-items: start; }
+.stat { display: flex; flex-direction: column; justify-content: space-between; gap: 6px; padding: 16px 20px 14px; }
+.stat b { order: 2; font-family: var(--display); font-size: 40px; line-height: 1; font-weight: 700; letter-spacing: -.02em; }
+.stat span { order: 1; color: var(--mu); font-size: 13px; line-height: 1.35; }
 
-/* Buttons & Inputs */
+/* ---------- Buttons and fields ---------- */
 button.b, select {
-  font: inherit;
-  color: var(--tx);
-  background: var(--sf);
-  border: 1px solid var(--bd);
-  border-radius: 8px;
-  padding: 7px 14px;
-  cursor: pointer;
-  min-height: 36px;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.15s ease;
+  font: 500 14px/1.2 var(--body);
+  color: var(--tx); background: transparent;
+  border: 1px solid var(--bd2); border-radius: 6px;
+  padding: 7px 14px; min-height: 38px; cursor: pointer;
+  transition: background .12s, border-color .12s;
 }
-button.b:hover {
-  background: var(--bd);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-button.p {
-  background: linear-gradient(135deg, var(--pa), var(--pb));
-  color: #fff;
-  border: 0;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
-}
-button.p:hover {
-  filter: brightness(1.12);
-  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.45);
-}
-button[aria-pressed=true] {
-  border-color: var(--ac);
-  background: rgba(14, 165, 233, 0.15);
-  color: var(--ac);
-  font-weight: 600;
-}
-button:focus-visible, input:focus-visible, select:focus-visible {
-  outline: 2px solid var(--ac);
-  outline-offset: 2px;
-}
-input.t, #lg input {
-  width: 100%;
-  font: inherit;
-  color: var(--tx);
-  background: var(--sf);
-  border: 1px solid var(--bd);
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin: 4px 0 10px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-input.t:focus, #lg input:focus {
-  border-color: var(--ac);
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
-}
+button.b:hover { background: var(--sf); border-color: var(--mu); }
+button.b:active { transform: translateY(1px); }
+button.p { background: var(--ink); color: var(--ink-tx); border-color: var(--ink); font-weight: 600; }
+button.p:hover { background: var(--ink); filter: brightness(.9); border-color: var(--ink); }
+button.b[aria-pressed=true] { background: var(--sf); border-color: var(--tx); box-shadow: inset 0 0 0 1px var(--tx); font-weight: 600; }
+select { appearance: auto; background: var(--sf); }
+:focus-visible { outline: 2px solid var(--ac); outline-offset: 2px; }
 
-/* Hero banner */
+input.t, #lg input {
+  width: 100%; font: 400 15px/1.3 var(--body); color: var(--tx);
+  background: var(--sf); border: 1px solid var(--bd2); border-radius: 6px;
+  padding: 10px 12px; margin: 5px 0 14px; min-height: 42px;
+  transition: border-color .12s, box-shadow .12s;
+}
+input.t:focus, #lg input:focus { border-color: var(--ac); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ac) 30%, transparent); outline: none; }
+.card label, #lg label { display: block; font-size: 13px; font-weight: 500; color: var(--mu); }
+
+/* ---------- Page header ---------- */
 .hero {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--radius);
-  padding: 22px 24px;
-  margin-bottom: 16px;
-  color: #fff;
-  background: linear-gradient(135deg, #0e1d2b 0%, #15293d 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: var(--shadow);
+  position: relative; overflow: hidden; isolation: isolate;
+  padding: 22px 28px 18px; margin-bottom: 16px;
+  background: var(--card); border: 1px solid var(--bd); border-radius: var(--radius);
+  color: var(--tx);
 }
 .hero::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: linear-gradient(180deg, var(--pa), var(--pb));
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: url(/contours.svg) center / cover no-repeat;
+  opacity: var(--contour, .32);
+  -webkit-mask-image: linear-gradient(100deg, transparent 20%, #000 90%);
+          mask-image: linear-gradient(100deg, transparent 20%, #000 90%);
 }
-.hero h1 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  position: relative;
-}
-.hero p {
-  margin: 6px 0 0;
-  max-width: 620px;
-  position: relative;
-  opacity: 0.9;
-  font-size: 13.5px;
-  color: #cbd5e1;
-}
-.hero .ic {
-  position: absolute;
-  right: 20px;
-  top: 14px;
-  font-size: 42px;
-  opacity: 0.75;
-}
-.hero .chips {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 12px;
-  position: relative;
-}
-.chips span {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 3px 12px;
-  border-radius: 99px;
-  font-size: 11.5px;
-  font-weight: 500;
-  color: #e2e8f0;
-}
-.hero .rain {
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(105deg, transparent 45%, rgba(56, 189, 248, 0.25) 50%, transparent 55%);
-  background-size: 24px 40px;
-  opacity: 0.3;
-  animation: rn 1.2s linear infinite;
-  pointer-events: none;
-}
-@keyframes rn { to { background-position: -24px 40px; } }
+.hero h1 { margin: 0; max-width: 20ch; font-size: clamp(26px, 3.4vw, 38px); line-height: 1.08; font-weight: 700; letter-spacing: -.02em; }
+.hero p { margin: 10px 0 0; max-width: 60ch; font-size: 15px; line-height: 1.55; color: var(--mu); }
+.hero .ic, .hero .rain { display: none; }
+.hero .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.chips span { padding: 2px 9px; border: 1px solid var(--bd2); border-radius: 4px; font-size: 12.5px; color: var(--mu); background: color-mix(in srgb, var(--bg) 55%, transparent); }
 
-/* Stats HUD */
-.stat {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-.stat b {
-  font-size: 28px;
-  font-weight: 700;
-  font-family: ui-monospace, "SF Mono", monospace;
-  letter-spacing: -0.5px;
-  color: var(--tx);
-  line-height: 1.2;
-}
-.stat span {
-  color: var(--mu);
-  font-size: 12px;
-  font-weight: 500;
-  margin-top: 4px;
-}
-
-/* Badges */
+/* ---------- Risk badges (tint + glyph + word: never colour alone) ---------- */
 .bd {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  border-radius: 99px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 0.4px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 8px; border-radius: 4px; border: 1px solid transparent;
+  font-size: 12px; font-weight: 700; letter-spacing: .02em; white-space: nowrap;
 }
+.bd-low      { color: var(--r0); background: color-mix(in srgb, var(--r0) 15%, transparent); border-color: color-mix(in srgb, var(--r0) 40%, transparent); }
+.bd-moderate { color: var(--r1); background: color-mix(in srgb, var(--r1) 15%, transparent); border-color: color-mix(in srgb, var(--r1) 40%, transparent); }
+.bd-high     { color: var(--r2); background: color-mix(in srgb, var(--r2) 15%, transparent); border-color: color-mix(in srgb, var(--r2) 45%, transparent); }
+.bd-critical { color: #fff; background: #c4302b; border-color: #c4302b; }
+:root[data-theme="light"] .bd-critical { background: #b0201a; }
+.bd-src { color: var(--mu); background: transparent; border-color: var(--bd2); font-weight: 600; }
+.bd-src.on { color: var(--r0); border-color: color-mix(in srgb, var(--r0) 45%, transparent); background: color-mix(in srgb, var(--r0) 12%, transparent); }
 
-/* Tables */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-th, td {
-  text-align: left;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--bd);
-}
-th {
-  color: var(--mu);
-  font-size: 11.5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-tr.k { cursor: pointer; transition: background 0.15s ease; }
+/* ---------- Tables ---------- */
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--bd); }
+th { color: var(--mu); font-size: 13px; font-weight: 500; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+tr.k { cursor: pointer; }
 tr.k:hover { background: var(--sf); }
 .sc { overflow-x: auto; }
 
-/* Map Viewport */
-.mapw {
-  position: relative;
-  aspect-ratio: 600 / 400;
-  border-radius: var(--radius);
-  overflow: hidden;
-  margin: 10px 0;
-  background: #060b13;
-  border: 1px solid var(--bd);
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
-}
-.mapw canvas, .mapw svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.mapw::after {
-  content: "N ▲";
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  color: var(--mu);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  background: rgba(0,0,0,0.5);
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid rgba(255,255,255,0.1);
-  pointer-events: none;
-}
+/* ---------- Map ---------- */
+.mapw { position: relative; aspect-ratio: 600 / 400; margin: 12px 0; border-radius: 6px; overflow: hidden; background: #070b09; border: 1px solid var(--bd); }
+.mapw canvas, .mapw svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mapw::after { content: "N"; position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.28); border-radius: 50%; color: #dfe7e1; font: 700 12px var(--body); background: rgba(8,12,10,.6); pointer-events: none; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.note { margin-top: 8px; font-size: 13px; line-height: 1.45; color: var(--mu); max-width: 70ch; }
 
-.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.note { font-size: 12px; color: var(--mu); margin-top: 6px; line-height: 1.4; }
+/* ---------- Zone detail ---------- */
+.fx { display: grid; grid-template-columns: 1.3fr .9fr 1fr; gap: 6px 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--bd); font-size: 14px; }
+.fx small { display: block; color: var(--mu); font-size: 12.5px; }
+.off { opacity: .45; }
+.bar { height: 8px; background: var(--sf); border-radius: 4px; overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 4px; background: var(--ac); }
+.nd { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.nd div { padding: 8px 10px; border: 1px solid var(--bd); border-radius: 6px; font-size: 12.5px; color: var(--mu); background: var(--sf); }
+.nd b { display: block; margin: 1px 0; font-family: var(--display); font-size: 20px; color: var(--tx); }
+.warn { margin-bottom: 14px; padding: 11px 14px; border: 1px solid color-mix(in srgb, var(--r2) 45%, transparent); border-left: 4px solid var(--r2); border-radius: 6px; background: color-mix(in srgb, var(--r2) 10%, transparent); font-size: 14px; }
+.mini { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.mini canvas { width: 100%; aspect-ratio: 600 / 400; display: block; border-radius: 6px; border: 1px solid var(--bd); }
+.spark { width: 100%; height: 76px; border-radius: 6px; background: var(--sf); border: 1px solid var(--bd); }
 
-/* Factor items & gauges */
-.fx {
-  display: grid;
-  grid-template-columns: 1.3fr 0.9fr 1fr;
-  gap: 6px 12px;
-  align-items: center;
-  font-size: 13px;
-  margin-bottom: 8px;
-  padding: 6px 8px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.02);
-}
-.fx small { display: block; color: var(--mu); font-size: 11.5px; }
-.off { opacity: 0.45; }
-
-.bar {
-  height: 8px;
-  background: var(--sf);
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-.bar i {
-  display: block;
-  height: 100%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--pa), var(--pb));
-}
-
-.nd {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 10px;
-}
-.nd div {
-  background: var(--sf);
-  border: 1px solid var(--bd);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 12px;
-  color: var(--mu);
-}
-.nd b {
-  display: block;
-  font-size: 18px;
-  font-family: ui-monospace, "SF Mono", monospace;
-  color: var(--tx);
-  margin: 2px 0;
-}
-
-.warn {
-  border-left: 4px solid #f97316;
-  background: rgba(249, 115, 22, 0.1);
-  border: 1px solid rgba(249, 115, 22, 0.3);
-  border-left-width: 4px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  margin-bottom: 14px;
-}
-
-.mini {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 14px;
-}
-.mini canvas {
-  width: 100%;
-  aspect-ratio: 600 / 400;
-  border-radius: 8px;
-  display: block;
-  border: 1px solid var(--bd);
-}
-
-/* Smartphone preview */
-.phone {
-  width: 260px;
-  margin: 10px auto;
-  border: 8px solid #1e293b;
-  border-radius: 32px;
-  padding: 16px 12px;
-  min-height: 200px;
-  background: var(--bg);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-  position: relative;
-}
-.phone::before {
-  content: "";
-  display: block;
-  width: 60px;
-  height: 4px;
-  background: #334155;
-  border-radius: 99px;
-  margin: 0 auto 12px;
-}
-.sms {
-  background: var(--card);
-  border: 1px solid var(--bd);
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-size: 12.5px;
-  line-height: 1.4;
-  white-space: pre-line;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-.sms small {
-  display: block;
-  color: var(--ac);
-  font-weight: 600;
-  margin-bottom: 4px;
-  font-size: 11px;
-}
+/* ---------- SMS phone and alert log ---------- */
+.phone { width: 250px; margin: 14px auto; padding: 14px 12px 16px; min-height: 180px; border: 6px solid var(--bd2); border-radius: 30px; background: var(--bg); }
+.phone::before { content: ""; display: block; width: 54px; height: 4px; margin: 0 auto 12px; border-radius: 4px; background: var(--bd2); }
+.sms { padding: 10px 12px; border-radius: 4px 14px 14px 14px; background: var(--sf); border: 1px solid var(--bd); font-size: 13.5px; line-height: 1.45; white-space: pre-line; }
+.sms small { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 700; color: var(--mu); }
 .phone .sms + .sms { margin-top: 8px; }
+.al { margin-bottom: 8px; padding: 10px 14px; border-left: 3px solid; border-radius: 0 6px 6px 0; background: var(--sf); font-size: 14px; }
 
-.al {
-  border-left: 4px solid;
-  padding: 10px 14px;
-  margin-bottom: 8px;
-  background: var(--sf);
-  border-radius: 0 8px 8px 0;
-  font-size: 13px;
-  transition: transform 0.1s ease;
-}
-.al:hover { transform: translateX(2px); }
+.live, .pulse-dot { display: inline-block; width: 9px; height: 9px; margin-right: 6px; border-radius: 50%; background: var(--r0); box-shadow: 0 0 0 0 color-mix(in srgb, var(--r0) 60%, transparent); animation: ping 2s infinite; }
+@keyframes ping { 70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+.pulse { animation: pl 2s cubic-bezier(0,0,.2,1) infinite; transform-origin: center; }
+@keyframes pl { 0% { opacity: .8; stroke-width: 2px; } 50% { opacity: .25; stroke-width: 1px; } 100% { opacity: .05; stroke-width: .5px; } }
 
-/* Radar pulse animation */
-.pulse {
-  animation: pl 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-  transform-origin: center;
-}
-@keyframes pl {
-  0% { opacity: 0.8; stroke-width: 2px; }
-  50% { opacity: 0.25; stroke-width: 1px; }
-  100% { opacity: 0.05; stroke-width: 0.5px; }
-}
-
-/* Responsive */
-@media (max-width: 860px) {
-  .app { grid-template-columns: 1fr; }
-  aside { position: static; height: auto; padding: 12px 14px; }
-  nav { flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 4px; }
-  nav button { white-space: nowrap; width: auto; padding: 8px 12px; }
-  .split { grid-template-columns: 1fr; }
-  main { padding: 14px 12px; }
-}
-
-/* Login Modal */
-#lg {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: rgba(6, 11, 19, 0.88);
-  backdrop-filter: blur(16px);
-  overflow: auto;
-}
-#lg.h { display: none; }
-#lg select { width: 100%; margin: 4px 0 10px; }
-#lg .card {
-  width: 100%;
-  max-width: 400px;
-  padding: 28px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(145deg, #10192b, #0c1424);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
-}
-.lg-brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 16px;
-}
-.lg-logo-img {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  object-fit: cover;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
-  border: 1.5px solid rgba(56, 189, 248, 0.35);
-  flex-shrink: 0;
-}
-#lg h2 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  background: linear-gradient(90deg, #fff, #93c5fd);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-#lg label, .card label {
-  font-size: 12px;
-  color: var(--mu);
-  display: block;
-  font-weight: 500;
-}
-.err {
-  color: #ef4444;
-  min-height: 18px;
-  font-size: 12.5px;
-  font-weight: 600;
-  margin-top: 4px;
-}
-.dm { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
-.dm .b {
-  flex: 1;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 10px;
-  background: rgba(56, 189, 248, 0.08);
-  border-color: rgba(56, 189, 248, 0.2);
-  color: #7dd3fc;
-  border-radius: 6px;
-}
-.dm .b:hover {
-  background: rgba(56, 189, 248, 0.2);
-  color: #fff;
-}
-
-.spark {
-  width: 100%;
-  height: 70px;
-  background: var(--sf);
-  border-radius: 8px;
-  border: 1px solid var(--bd);
-}
-.live {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #10b981;
-  margin-right: 8px;
-  box-shadow: 0 0 8px #10b981;
-  animation: pl 1.6s infinite;
-}
-
-/* Range & Area Safety view */
-.ar-ctl {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px 20px;
-  margin-bottom: 14px;
-}
-.ar-ctl label { font-size: 13px; color: var(--mu); display: block; }
-.ar-ctl b { color: var(--tx); font-family: ui-monospace, "SF Mono", monospace; }
-.ar-ctl input[type=range] { width: 100%; accent-color: var(--ac); }
+/* ---------- Area safety view ---------- */
+.ar-ctl { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 20px; margin-bottom: 14px; }
+.ar-ctl label { font-size: 14px; color: var(--mu); }
+.ar-ctl b { color: var(--tx); }
+.ar-ctl input[type=range] { width: 100%; }
 .ar-ctl select { width: 100%; margin-top: 6px; }
-
-.ar-mapw {
-  aspect-ratio: 3 / 2;
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: var(--sf);
-  border: 1px solid var(--bd);
-}
+.ar-mapw { aspect-ratio: 3 / 2; border-radius: 6px; overflow: hidden; background: var(--sf); border: 1px solid var(--bd); }
 .ar-mapw svg { width: 100%; height: 100%; display: block; }
 .ar-mapw svg text { fill: var(--tx); font-size: 12px; font-weight: 600; }
-
 .ar-g2e { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
 .ar-g2e .phone { width: 100%; max-width: 320px; }
-
-.ar-kp {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 14px;
-}
-.ar-kp div {
-  background: var(--sf);
-  border: 1px solid var(--bd);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 12px;
-  color: var(--mu);
-}
-.ar-kp b {
-  display: block;
-  font-size: 22px;
-  font-family: ui-monospace, "SF Mono", monospace;
-  color: var(--tx);
-  margin-top: 2px;
-}
-
-.ar-tile {
-  background: var(--sf);
-  border: 1px solid var(--bd);
-  border-radius: 8px;
-  padding: 12px 14px;
-}
-.ar-tile b { font-size: 16px; display: block; }
-
-.ar-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 8px;
-  vertical-align: middle;
-}
-.ar-split {
-  display: grid;
-  gap: 14px;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-}
+.ar-kp { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+.ar-kp div { padding: 10px 12px; border: 1px solid var(--bd); border-radius: 6px; background: var(--sf); font-size: 13px; color: var(--mu); }
+.ar-kp b { display: block; margin-top: 2px; font-family: var(--display); font-size: 24px; color: var(--tx); }
+.ar-tile { padding: 12px 14px; border: 1px solid var(--bd); border-radius: 6px; background: var(--sf); }
+.ar-tile b { display: block; font-size: 16px; }
+.ar-dot { display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; vertical-align: middle; }
+.ar-split { display: grid; gap: 14px; grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
 .ar-split td:nth-child(2) { white-space: nowrap; }
 
-/* SOS Buttons */
-.btn-safe {
-  background: linear-gradient(135deg, #059669, #10b981) !important;
-  color: #fff !important;
-  font-weight: 600 !important;
-  border: 0 !important;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
-}
-.btn-safe:hover { filter: brightness(1.15); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45); }
-.btn-help {
-  background: linear-gradient(135deg, #b91c1c, #ef4444) !important;
-  color: #fff !important;
-  font-weight: 600 !important;
-  border: 0 !important;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
-}
-.btn-help:hover { filter: brightness(1.15); box-shadow: 0 4px 14px rgba(239, 68, 68, 0.5); }
+/* ---------- Emergency actions ---------- */
+button.btn-safe, button.btn-help { min-height: 46px; font-size: 15px; font-weight: 700; color: #fff; border: 0; }
+button.btn-safe { background: #1d7a4f; }
+button.btn-help { background: #c4302b; }
+button.btn-safe:hover { background: #17673f; }
+button.btn-help:hover { background: #a82722; }
 
-/* Colorblind-safe badges & high-contrast labels */
-.bd {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
-  border-radius: 99px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-.bd-low { color: #fff; background: #10b981 !important; }
-.bd-moderate { color: #1e293b; background: #fbbf24 !important; font-weight: 800; border-color: rgba(0,0,0,0.2); }
-.bd-high { color: #fff; background: #f97316 !important; }
-.bd-critical { color: #fff; background: #ef4444 !important; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
-
-/* Simulation Banner */
+/* ---------- Simulation banner ---------- */
 .sim-banner {
-  background: linear-gradient(90deg, #b45309, #d97706);
-  color: #fff;
-  border-radius: 8px;
-  padding: 10px 16px;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4);
-  font-size: 13px;
-  animation: pulse-sim 2s infinite;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-bottom: 14px; padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--r1) 55%, transparent); border-left: 4px solid var(--r1);
+  border-radius: 6px; background: color-mix(in srgb, var(--r1) 11%, transparent);
+  font-size: 14px;
 }
-@keyframes pulse-sim {
-  50% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.7); }
-}
+.sim-banner .b { min-height: 32px; padding: 3px 12px; }
 
-/* Low-Bandwidth Mode */
-body.low-bw .rain, body.low-bw .pulse { animation: none !important; }
+/* ---------- Sign-in ---------- */
+#lg { position: fixed; inset: 0; z-index: 100; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(360px, .85fr); background: var(--bg); overflow: auto; }
+#lg.h { display: none; }
+.lg-art { position: relative; isolation: isolate; display: flex; flex-direction: column; justify-content: space-between; padding: 40px 48px; background: #0a0f0d; color: #e8ece5; overflow: hidden; border-right: 1px solid #1d2723; }
+.lg-art::before { content: ""; position: absolute; inset: 0; z-index: -1; background: url(/contours.svg) center / cover no-repeat; opacity: .5; }
+.lg-art::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, #0a0f0d 0%, transparent 35%, transparent 55%, #0a0f0d 100%); }
+.lg-brand { display: flex; align-items: center; gap: 12px; }
+.lg-logo-img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; border: 1px solid #2b3a33; }
+.lg-brand b { font-family: var(--display); font-size: 20px; letter-spacing: .02em; }
+.lg-art h2 { margin: 0; max-width: 14ch; font-size: clamp(34px, 5vw, 58px); line-height: 1.02; font-weight: 700; letter-spacing: -.025em; }
+.lg-art p { margin: 16px 0 0; max-width: 44ch; font-size: 16px; line-height: 1.55; color: #a9bab0; }
+.lg-form { display: grid; place-items: center; padding: 32px 28px; }
+#lg .card { width: 100%; max-width: 380px; padding: 0; border: 0; background: transparent; }
+#lg .card h1 { margin: 0 0 4px; font-size: 24px; font-weight: 700; letter-spacing: -.01em; }
+#lg select { width: 100%; margin: 5px 0 14px; min-height: 42px; }
+#lg form .b.p { width: 100%; min-height: 44px; font-size: 15px; }
+.lg-tabs { display: grid; grid-template-columns: 1fr 1fr; margin: 18px 0 18px; border: 1px solid var(--bd2); border-radius: 6px; padding: 3px; gap: 3px; }
+.lg-tabs .b { border: 0; min-height: 34px; }
+.lg-tabs .b[aria-pressed=true] { background: var(--ink); color: var(--ink-tx); box-shadow: none; }
+.err { min-height: 20px; margin: -4px 0 8px; font-size: 14px; font-weight: 600; color: var(--r3); }
+.lg-demo { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--bd); }
+.lg-demo small { display: block; margin-bottom: 8px; font-size: 13px; color: var(--mu); }
+.dm { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.dm .b { min-height: 36px; padding: 6px 8px; font-size: 13px; }
+
+/* ---------- Low-bandwidth mode ---------- */
+body.low-bw .pulse, body.low-bw .live { animation: none !important; }
 body.low-bw .mapw canvas { display: none !important; }
-body.low-bw .mapw { background: #0c1524 !important; aspect-ratio: auto; min-height: 180px; }
-body.low-bw .card { box-shadow: none !important; backdrop-filter: none !important; }
-body.low-bw .hero { background: #0c1424 !important; }
+body.low-bw .mapw { aspect-ratio: auto; min-height: 180px; }
+body.low-bw .hero::before, body.low-bw .lg-art::before { display: none; }
 
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  #lg { grid-template-columns: 1fr; }
+  .lg-art { padding: 24px 24px 28px; gap: 28px; }
+  .lg-art h2 { font-size: 34px; }
+  .lg-art p { font-size: 15px; }
+  .lg-form { padding: 24px 20px 40px; }
+}
 @media (max-width: 860px) {
-  .ar-g2e, .ar-split { grid-template-columns: 1fr; }
+  .app { grid-template-columns: 1fr; }
+  aside { position: static; height: auto; padding: 12px 12px 6px; flex-direction: column; }
+  .logo { padding-bottom: 12px; margin-bottom: 8px; }
+  nav { flex-direction: row; flex: none; overflow-x: auto; gap: 4px; padding-bottom: 8px; scrollbar-width: none; }
+  nav::-webkit-scrollbar { display: none; }
+  nav button { width: auto; white-space: nowrap; padding: 9px 12px; }
+  nav button.on::before { left: 10px; right: 10px; top: auto; bottom: 0; width: auto; height: 2px; border-radius: 2px; }
+  .who { margin-top: 4px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .who .b { width: auto; margin: 0; padding: 4px 12px; }
+  .split, .ar-g2e, .ar-split { grid-template-columns: 1fr; }
+  main { padding: 14px 14px 40px; }
+  .hero { padding: 18px 18px 16px; }
+  .hero .chips { display: none; }
+  .hero p { font-size: 14px; }
+  .stat b { font-size: 32px; }
+  .top input[type=range] { width: 130px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 </style></head><body data-pg="dash">
 <div class="app"><aside><div class="logo"><img src="/logo.png" alt="LANDSAFE AI Logo" class="logo-img"><div class="logo-text"><b>LANDSAFE AI</b><small>North East India</small></div></div><nav id="nav"></nav><div class="who" id="who"></div></aside>
@@ -886,24 +358,21 @@ body.low-bw .hero { background: #0c1424 !important; }
 <label for="storm">Storm intensity <b id="sv">0%</b></label><input id="storm" type="range" min="0" max="100" value="0">
 <button class="b p" id="sim">Simulate storm</button><button class="b" id="rst">Reset</button><button class="b" id="lv" aria-pressed="true">Live feed: on</button>
 <button class="b" id="sen" aria-pressed="true">Ground sensors: on</button><button class="b" id="sat" aria-pressed="true">Satellite: on</button>
-<button class="b" id="bw" aria-pressed="false" onclick="toggleLowBw()">📶 Low-bandwidth: off</button>
+<button class="b" id="bw" aria-pressed="false" onclick="toggleLowBw()">Low-bandwidth: off</button>
 </div>
 <div id="sim-banner" style="display:none" class="sim-banner">
-  <span>⚡ <b>SIMULATION ACTIVE:</b> Storm intensity at <span id="sb-pct">0%</span>. Live sensor and satellite values are scaled for demonstration.</span>
-  <button class="b" onclick="rstSim()" style="background:#fff;color:#b45309;font-weight:700;padding:4px 10px;border:0">Exit Simulation</button>
+  <span><b>Simulation running.</b> Storm intensity at <span id="sb-pct">0%</span>. Sensor and satellite values are scaled up to show how the console reacts.</span>
+  <button class="b" onclick="rstSim()">Stop simulation</button>
 </div>
 <div id="pg"></div>
 </main></div>
-<div id="lg"><div class="card"><div class="lg-brand"><img src="/logo.png" alt="LANDSAFE AI Logo" class="lg-logo-img"><div><h2 style="margin:0 0 2px">LANDSAFE AI</h2><div class="note" style="margin:0">North East India · Early-Warning Console</div></div></div>
-<div class="row" style="margin-bottom:12px"><button class="b" type="button" id="t1" aria-pressed="true" onclick="tab(1)">Sign in</button><button class="b" type="button" id="t2" aria-pressed="false" onclick="tab(2)">Create account</button></div>
-<form id="lf"><label for="lu">Username</label><input id="lu" autocomplete="username"><label for="lp">Password</label><input id="lp" type="password" autocomplete="current-password"><div class="err" id="le" role="alert"></div><button class="b p" style="width:100%">Sign in</button></form>
-<form id="sf" style="display:none"><label for="sn">Full name</label><input id="sn" autocomplete="name"><label for="su">Username (letters, numbers, underscore)</label><input id="su" autocomplete="username"><label for="sp">Password (at least 8 characters)</label><input id="sp" type="password" autocomplete="new-password"><label for="sph">Phone with country code (optional)</label><input id="sph" inputmode="tel" placeholder="+91XXXXXXXXXX"><label for="sz">My home area</label><select id="sz"></select><div class="err" id="se" role="alert"></div><button class="b p" style="width:100%">Create account</button></form>
-<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)"><small style="color:var(--mu);display:block;margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Try a demo profile with 1-click:</small>
-<div class="dm">
-  <button class="b" type="button" onclick="demo('admin')">🛡️ Admin</button>
-  <button class="b" type="button" onclick="demo('officer')">📡 Officer</button>
-  <button class="b" type="button" onclick="demo('public')">🏡 Resident</button>
-</div></div></div></div>
+<div id="lg"><section class="lg-art" aria-hidden="false"><div class="lg-brand"><img src="/logo.png" alt="" class="lg-logo-img"><b>LANDSAFE AI</b></div>
+<div><h2>Landslide warnings for North East India</h2><p>Ground sensors, satellite data and terrain maps combine into one risk score for each of 16 monitored zones.</p></div></section>
+<div class="lg-form"><div class="card"><h1>Welcome back</h1><div class="note" style="margin:0">Sign in to the early-warning console.</div>
+<div class="lg-tabs" role="group" aria-label="Sign in or create account"><button class="b" type="button" id="t1" aria-pressed="true" onclick="tab(1)">Sign in</button><button class="b" type="button" id="t2" aria-pressed="false" onclick="tab(2)">Create account</button></div>
+<form id="lf"><label for="lu">Username</label><input id="lu" autocomplete="username"><label for="lp">Password</label><input id="lp" type="password" autocomplete="current-password"><div class="err" id="le" role="alert"></div><button class="b p">Sign in</button></form>
+<form id="sf" style="display:none"><label for="sn">Full name</label><input id="sn" autocomplete="name"><label for="su">Username (letters, numbers, underscore)</label><input id="su" autocomplete="username"><label for="sp">Password (at least 8 characters)</label><input id="sp" type="password" autocomplete="new-password"><label for="sph">Phone with country code (optional)</label><input id="sph" inputmode="tel" placeholder="+91XXXXXXXXXX"><label for="sz">My home area</label><select id="sz"></select><div class="err" id="se" role="alert"></div><button class="b p">Create account</button></form>
+<div class="lg-demo"><small>Or explore with a demo account</small><div class="dm"><button class="b" type="button" onclick="demo('admin')">Admin</button><button class="b" type="button" onclick="demo('officer')">Officer</button><button class="b" type="button" onclick="demo('public')">Resident</button></div></div></div></div></div>
 <script>
 const LV=[['LOW','#10b981'],['MODERATE','#fbbf24'],['HIGH','#f97316'],['CRITICAL','#ef4444']],TH=[0,40,60,80],EX=['','Low','Medium','High'],IN=['','Low','Major road','Critical road'];
 const BD_CLS=['bd-low','bd-moderate','bd-high','bd-critical'],BD_SYM=['●','▲','■','✖'];
@@ -913,6 +382,7 @@ let seed=11;const rnd=()=>(seed=seed*16807%2147483647)/2147483647,nz=(i,j)=>{con
 const Z=D.map(a=>({n:a[0],s:a[1],rain:a[4],soil:a[5],sl:a[6],h:a[7],ex:a[8],inf:a[9],rd:a[10],x:px(a[3]),y:py(a[2]),lv:0,live:{},
 nodes:[0,1,2].map(k=>({o:(rnd()-.5)*5,j:0,b:65+Math.round(rnd()*30),x:px(a[3])+(k-1)*13,y:py(a[2])+16}))}));
 const S={pg:'dash',sel:8,l:0,tg:.85,live:1,hist:[],out:[],phone:'',ep:'',auto:1,user:null,checks:[],reps:[{id:'LR-1042',zi:8,hz:'Rockfall',u:'resident_gtk',t:'08:20',st:'Pending'},{id:'LR-1043',zi:5,hz:'Water seepage',u:'resident_cpj',t:'09:05',st:'Pending'}],rz:null,rh:null,sen:1,sat:1,layer:'sat',lang:'en',al:[],sent:0,rv:1,sn:1,tm:null};
+const ICONS={dash:'<svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="4.5" rx="1.5"/><rect x="13.5" y="11" width="7" height="9.5" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/></svg>',map:'<svg viewBox="0 0 24 24"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg>',sens:'<svg viewBox="0 0 24 24"><path d="M12 3.5s6 6.2 6 10.6a6 6 0 0 1-12 0C6 9.700 12 3.500 12 3.500z"/></svg>',sat:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.500"/><path d="M3.500 12h17M12 3.500c2.600 2.500 3.800 5.300 3.800 8.500S14.600 18 12 20.500C9.400 18 8.200 15.200 8.200 12S9.400 6 12 3.500z"/></svg>',alerts:'<svg viewBox="0 0 24 24"><path d="M6 16.500V11a6 6 0 0 1 12 0v5.500l1.500 2h-15z"/><path d="M10 21h4"/></svg>',rep:'<svg viewBox="0 0 24 24"><rect x="5" y="4.500" width="14" height="16.500" rx="2"/><path d="M9 4.500V3.500h6v1M8.500 11h7M8.500 15h5"/></svg>',set:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>',rng:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.500"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="9.500"/></svg>',src:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.500" ry="2.800"/><path d="M4.500 6v6c0 1.500 3.400 2.800 7.500 2.800s7.500-1.300 7.500-2.800V6M4.500 12v6c0 1.500 3.400 2.800 7.500 2.800s7.500-1.300 7.500-2.800v-6"/></svg>'};
 const PG=[['dash','Dashboard','▦'],['map','Risk Map (GIS)','◉'],['sens','Soil Sensors','⌁'],['sat','Satellite and GIS','✦'],['alerts','SMS Alerts','⚑'],['rep','Reports','✎'],['set','SMS Settings','⚙']];
 const HERO={dash:['⛰️','Landslide early-warning console','Ground soil-moisture sensors, satellite imagery and GIS terrain fused into one risk score for 16 NER zones.',['Soil sensors','Sentinel-1 InSAR','Sentinel-2 NDVI','GPM rainfall','DEM + geology']],
 map:['🗺️','Risk map with satellite and GIS layers','Switch between satellite, vegetation, rainfall, ground movement and slope. Click a zone to see how its score is built.',['Satellite view','NDVI','InSAR','Slope']],
@@ -971,7 +441,7 @@ const sb=$('sim-banner');if(sb){if(S.l>0.01){sb.style.display='flex';const sbp=$
 $('sv').textContent=Math.round(S.l*100)+'%';$('storm').value=S.l*100;const ae=document.activeElement;if(ae&&$('pg').contains(ae)&&/INPUT|SELECT/.test(ae.tagName))syncTop();else render()}
 const bd=z=>`<span class="bd ${BD_CLS[z.lv]}">${BD_SYM[z.lv]} ${LV[z.lv][0]}</span>`;
 function detail(z){
-const expl=`<div style="background:rgba(14,165,233,0.08);border:1px solid rgba(14,165,233,0.25);border-radius:8px;padding:8px 12px;margin:10px 0"><div style="font-weight:700;font-size:11.5px;color:var(--ac);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">🔍 Why this zone is flagged:</div><ul style="margin:0;padding-left:18px;font-size:12px;line-height:1.45;color:var(--tx)">${(z.reasons||[]).map(r=>`<li>${esc(r)}</li>`).join('')}</ul></div>`;
+const expl=`<div style="background:var(--sf);border:1px solid var(--bd);border-left:3px solid var(--ac);border-radius:6px;padding:10px 14px;margin:12px 0"><div style="font-weight:600;font-size:13px;margin-bottom:4px">Why this zone is flagged</div><ul style="margin:0;padding-left:18px;font-size:13.5px;line-height:1.5;color:var(--tx)">${(z.reasons||[]).map(r=>`<li>${esc(r)}</li>`).join('')}</ul></div>`;
 if(!pro())return`<div class="card"><h3>${z.n}, ${z.s}</h3><p>${bd(z)} risk level</p><p>${ADV[z.lv]}</p>${expl}<div class="note">Detailed sensor and satellite data is for authorised staff only.</div></div>`;
 return`<div class="card"><h3>${z.n}, ${z.s}: score ${z.sc}% ${bd(z)}</h3><p>Main driver: <b>${[...z.T].sort((a,b)=>b.p-a.p)[0].n}</b></p>`+expl+z.T.map(t=>`<div class="fx${t.on?'':' off'}"><span>${t.n}<small>${t.on?t.s:'source off'}</small></span><span>${t.on?t.t:'no data'}</span><span><div class="bar"><i style="width:${Math.min(100,t.p*2.2)}%;background:var(--ac)"></i></div><small>${t.p.toFixed(1)} points</small></span></div>`).join('')+
 `<div class="fx"><span>Terrain (GIS)<small>Slope ${z.sl}°, ${z.h} past slides, ${IN[z.inf]} (${z.rd})</small></span><span>×${z.su.toFixed(2)}</span><span><small>multiplies the live signals</small></span></div>`+
@@ -979,12 +449,12 @@ return`<div class="card"><h3>${z.n}, ${z.s}: score ${z.sc}% ${bd(z)}</h3><p>Main
 function mapSvg(){let s='';if(S.rv)s+='<path d="'+[[94.8,27.6],[93.5,27],[92.4,26.6],[91.74,26.15],[90.8,26.1],[90,25.6],[89.7,25.2]].map((p,i)=>(i?'L':'M')+px(p[0]).toFixed(0)+' '+py(p[1]).toFixed(0)).join('')+'" fill="none" stroke="#7cc4e8" stroke-width="4" stroke-linecap="round"/>';
 Z.forEach((z,i)=>{const c=LV[z.lv][1],on=i==S.sel;
 if(z.lv>=2)s+=`<circle class="pulse" cx="${z.x}" cy="${z.y}" r="34" fill="${c}" fill-opacity=".25" stroke="${c}" stroke-width="2" stroke-dasharray="5 3"/>`;
-if(S.sn&&pro())z.nodes.forEach((n,k)=>{const m=z.nd?z.nd[k]:50,f=m>85?'#dc2626':m>70?'#f97316':m>55?'#eab308':'#16a34a';s+=`<rect x="${n.x-3.5}" y="${n.y-3.5}" width="7" height="7" transform="rotate(45 ${n.x} ${n.y})" fill="${f}" stroke="#fff" stroke-width="1"/>`});
+if(S.sn&&pro())z.nodes.forEach((n,k)=>{const m=z.nd?z.nd[k]:50,f=m>85?'var(--r3)':m>70?'#f97316':m>55?'var(--r1)':'var(--r0)';s+=`<rect x="${n.x-3.5}" y="${n.y-3.5}" width="7" height="7" transform="rotate(45 ${n.x} ${n.y})" fill="${f}" stroke="#fff" stroke-width="1"/>`});
 s+=`<g style="cursor:pointer" onclick="S.sel=${i};render()"><circle cx="${z.x}" cy="${z.y}" r="${on?10:7}" fill="${c}" stroke="#fff" stroke-width="2.5"><title>${z.n}: ${z.sc}% ${LV[z.lv][0]}</title></circle><text x="${z.x}" y="${z.y-13}" text-anchor="middle" font-size="${on?12:10}" font-weight="700" fill="#fff" stroke="#000" stroke-opacity=".7" stroke-width="3" paint-order="stroke">${on?z.n+' ':''}${z.sc}%</text></g>`});return s}
 const P={
 dash(){const z=[...Z].sort((a,b)=>b.sc-a.sc),n=Z.length*3,av=Z.reduce((a,x)=>a+x.so,0)/Z.length;
 return`<div class="g g4"><div class="card stat"><b>${Z.filter(x=>x.lv>=2).length}</b><span>Zones at High or Critical</span></div><div class="card stat"><b>${av.toFixed(0)}%</b><span>Average soil moisture (${S.sen?'sensors':'satellite estimate'})</span></div><div class="card stat"><b>${S.sen?n:0}/${n}</b><span>Sensor nodes online</span></div><div class="card stat"><b>${S.sent.toLocaleString()}</b><span>SMS alerts sent</span></div></div>
-<div class="card" style="margin-bottom:12px"><h3><span class="live"></span>Live trend</h3>${spark()}</div><div class="card" style="margin-bottom:12px"><h3>Data sources</h3><div class="row">${[['Ground sensor nodes (LoRa)',S.sen],['Sentinel-1 InSAR',S.sat],['Sentinel-2 NDVI',S.sat],['GPM IMERG rainfall',S.sat],['DEM and geology (GIS)',1]].map(a=>`<span class="bd" style="background:${a[1]?'#16a34a':'#94a3b8'}">${a[0]}: ${a[1]?'live':'off'}</span>`).join('')}</div></div>
+<div class="card" style="margin-bottom:12px"><h3><span class="live"></span>Live trend</h3>${spark()}</div><div class="card" style="margin-bottom:12px"><h3>Data sources</h3><div class="row">${[['Ground sensor nodes (LoRa)',S.sen],['Sentinel-1 InSAR',S.sat],['Sentinel-2 NDVI',S.sat],['GPM IMERG rainfall',S.sat],['DEM and geology (GIS)',1]].map(a=>`<span class="bd bd-src${a[1]?' on':''}">${a[0]}: ${a[1]?'live':'off'}</span>`).join('')}</div></div>
 <div class="card sc"><h3>Priority zones</h3><table><tr><th>Zone</th><th>State</th><th>Risk</th><th>Trend</th><th>Rain</th><th>Soil</th><th>InSAR</th><th>Slope</th></tr>${z.slice(0,8).map(x=>`<tr class="k" onclick="S.sel=${Z.indexOf(x)};go('map')"><td>${x.n}</td><td>${x.s}</td><td>${bd(x)} ${x.sc}%</td><td>${tr(x)}</td><td>${Math.round(x.rn)} mm</td><td>${x.so.toFixed(0)}%</td><td>${x.ins.toFixed(1)} mm</td><td>${x.sl}°</td></tr>`).join('')}</table><div class="note">Click a row to open it on the map.</div></div>`},
 map(){return`<div class="split"><div class="card"><h3>Data layers</h3><div class="row">${Object.keys(MAPS).filter(k=>pro()||k=='sat'||k=='rain').map(k=>`<button class="b" aria-pressed="${k==S.layer}" onclick="S.layer='${k}';render()">${MAPS[k]}</button>`).join('')}</div><div class="mapw"><canvas id="cv" width="${W}" height="${H}"></canvas><svg viewBox="0 0 600 400" role="img" aria-label="Map of 16 monitored zones in North East India">${mapSvg()}</svg></div><div class="row">${pro()?'<button class="b" aria-pressed="'+!!S.sn+'" onclick="S.sn=!S.sn;render()">Sensor nodes</button>':''}<button class="b" aria-pressed="${!!S.rv}" onclick="S.rv=!S.rv;render()">Rivers</button></div><div class="note">${LEG[S.layer]}${pro()?' Sensor nodes are coloured by soil moisture, from green (dry) to red (saturated).':''} Schematic map with simulated data.</div></div>${detail(Z[S.sel])}</div>`},
 sens(){const z=[...Z].sort((a,b)=>b.so-a.so);return`<div class="g g4"><div class="card stat"><b>${S.sen?Math.max(...Z.map(x=>x.so)).toFixed(0)+'%':'off'}</b><span>Wettest zone average</span></div><div class="card stat"><b>${S.sen?Math.min(...Z.map(x=>x.so)).toFixed(0)+'%':'off'}</b><span>Driest zone average</span></div><div class="card stat"><b>${S.sen?'48/48':'0/48'}</b><span>Nodes online</span></div></div>${S.sen?'':'<div class="warn">Ground sensors are off. Soil moisture comes from a coarser satellite estimate, so scores react later.</div>'}<div class="g g3">${z.map(x=>`<div class="card ${S.sen?'':'off'}"><h3>${x.n} ${bd(x)}</h3><div class="bar"><i style="width:${x.so}%;background:var(--ac)"></i></div><div class="note">Zone average ${x.so.toFixed(0)}%</div><div class="nd">${x.nodes.map((n,k)=>`<div>${'ABC'[k]}<b>${x.nd[k].toFixed(0)}%</b>${n.b}% batt</div>`).join('')}</div></div>`).join('')}</div>`},
@@ -1004,7 +474,7 @@ function sendSms(z,lv){if(!S.phone)return;const m='LANDSAFE '+LV[lv][0]+': '+z.n
 const ep=S.ep||(TOK&&pro()?'/send':'');if(ep){fetch(ep,{method:'POST',headers:{'Content-Type':'application/json',...(TOK&&ep.startsWith('/')?{Authorization:'Bearer '+TOK}:{})},body:JSON.stringify({to:S.phone,message:m})}).then(r=>{o.st=r.ok?'Sent to '+S.phone:'Backend refused ('+r.status+')'}).catch(()=>{o.st='Backend not reachable, use the link to send from your phone';o.link=lnk(m)}).finally(()=>render())}
 else{o.st='Ready: tap the link to send from your phone';o.link=lnk(m)}}
 function spark(){const h=S.hist;if(h.length<2)return'<div class="note">Collecting live data…</div>';const pt=k=>h.map((p,i)=>(i/39*300).toFixed(1)+','+(68-p[k]*.66).toFixed(1)).join(' ');
-return`<svg class="spark" viewBox="0 0 300 70" preserveAspectRatio="none" role="img" aria-label="Live trend of highest zone risk and average soil moisture"><polyline points="${pt('m')}" fill="none" stroke="#dc2626" stroke-width="2"/><polyline points="${pt('s')}" fill="none" stroke="var(--ac)" stroke-width="2"/></svg><div class="note"><span style="color:#dc2626">━</span> Highest zone risk &nbsp; <span style="color:var(--ac)">━</span> Average soil moisture</div>`}
+return`<svg class="spark" viewBox="0 0 300 70" preserveAspectRatio="none" role="img" aria-label="Live trend of highest zone risk and average soil moisture"><polyline points="${pt('m')}" fill="none" stroke="var(--r3)" stroke-width="2"/><polyline points="${pt('s')}" fill="none" stroke="var(--ac)" stroke-width="2"/></svg><div class="note"><span style="color:var(--r3)">━</span> Highest zone risk &nbsp; <span style="color:var(--ac)">━</span> Average soil moisture</div>`}
 const PUBLIC_I18N = {
   en: {
     statusTitle: 'Monitored Zone Status',
@@ -1073,9 +543,9 @@ return langBar()+`<div class="g g4"><div class="card stat"><b>${Z.filter(x=>x.lv
 function pubA(){const L=PUBLIC_I18N[S.lang]||PUBLIC_I18N.en;
 return`<div class="card"><h3>${L.statusTitle}</h3>${S.al.length?S.al.map(a=>`<div class="al" style="border-color:${LV[a.lv][1]}"><b>${a.t}</b> ${a.z}: ${LV[a.lv][0]}<br>${L.adv[a.lv]}</div>`).join(''):'<div class="note">No active alerts.</div>'}<div class="note">${L.helpline}</div></div>`}
 function mine(){const z=Z[S.user.zone],hot=z.lv>=2,L=PUBLIC_I18N[S.lang]||PUBLIC_I18N.en;
-return langBar()+(hot?`<div class="warn" style="border-color:${LV[z.lv][1]}"><b>${z.n}: ${LV[z.lv][0]} (${L.risk})</b><br>${L.adv[z.lv]}</div>`:'')+`<div class="card" style="margin-bottom:12px"><h3>${L.myArea}: ${z.n} (${z.s})</h3><p>${bd(z)} ${tr(z)} &nbsp;·&nbsp; <b>${Math.round(z.rn)} mm</b> rain, <b>${z.so.toFixed(0)}%</b> soil saturation</p><p style="font-weight:600;color:var(--tx)">${L.adv[z.lv]}</p><div style="background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:10px 0"><small style="text-transform:uppercase;font-weight:700;color:var(--mu);display:block;margin-bottom:4px">Primary risk factors:</small><ul style="margin:0;padding-left:18px;font-size:12.5px">${(z.reasons||[]).map(r=>`<li>${esc(r)}</li>`).join('')}</ul></div><div class="row"><button class="b p btn-safe" onclick="chk('safe')">${L.safeBtn}</button><button class="b btn-help" onclick="chk('help')">${L.helpBtn}</button>${S.user.phone?`<a href="sms:${S.user.phone}?&body=${encodeURIComponent('LANDSAFE '+LV[z.lv][0]+': '+z.n+'. '+L.adv[z.lv])}">${L.textSms}</a>`:''}</div>${lastChk()}</div>`}
+return langBar()+(hot?`<div class="warn" style="border-color:${LV[z.lv][1]}"><b>${z.n}: ${LV[z.lv][0]} (${L.risk})</b><br>${L.adv[z.lv]}</div>`:'')+`<div class="card" style="margin-bottom:12px"><h3>${L.myArea}: ${z.n} (${z.s})</h3><p>${bd(z)} ${tr(z)} &nbsp;·&nbsp; <b>${Math.round(z.rn)} mm</b> rain, <b>${z.so.toFixed(0)}%</b> soil saturation</p><p style="font-weight:600;color:var(--tx)">${L.adv[z.lv]}</p><div style="background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:10px 0"><small style="font-weight:600;font-size:13px;color:var(--mu);display:block;margin-bottom:4px">Primary risk factors:</small><ul style="margin:0;padding-left:18px;font-size:12.5px">${(z.reasons||[]).map(r=>`<li>${esc(r)}</li>`).join('')}</ul></div><div class="row"><button class="b p btn-safe" onclick="chk('safe')">${L.safeBtn}</button><button class="b btn-help" onclick="chk('help')">${L.helpBtn}</button>${S.user.phone?`<a href="sms:${S.user.phone}?&body=${encodeURIComponent('LANDSAFE '+LV[z.lv][0]+': '+z.n+'. '+L.adv[z.lv])}">${L.textSms}</a>`:''}</div>${lastChk()}</div>`}
 window.rstSim=function(){clearInterval(S.tm);S.l=0;$('storm').value=0;S.al=[];S.sent=0;Z.forEach(z=>z.lv=0);update()};
-window.toggleLowBw=function(){document.body.classList.toggle('low-bw');const on=document.body.classList.contains('low-bw');const btn=$('bw');if(btn){btn.setAttribute('aria-pressed',on);btn.textContent='📶 Low-bandwidth: '+(on?'on':'off')}};
+window.toggleLowBw=function(){document.body.classList.toggle('low-bw');const on=document.body.classList.contains('low-bw');const btn=$('bw');if(btn){btn.setAttribute('aria-pressed',on);btn.textContent='Low-bandwidth: '+(on?'on':'off')}};
 function outbox(){return`<div class="card" style="margin-top:12px"><h3>SMS outbox (${S.out.length})</h3>${S.out.length?S.out.map(o=>`<div class="al" style="border-color:${LV[o.lv][1]}"><b>${o.t}</b> ${o.st}<br>${o.m}${o.link?`<br><a href="${o.link}">Open in Messages to send</a>`:''}</div>`).join(''):'<div class="note">No messages yet. Add your phone number under SMS Settings.</div>'}</div>`}
 P.set=()=>`<div class="split"><div class="card"><h3>Send alerts to my phone</h3><label for="ph">Phone number with country code</label><input id="ph" class="t" inputmode="tel" placeholder="+91XXXXXXXXXX" value="${S.phone}" oninput="S.phone=this.value.trim()"><label for="ep">SMS backend URL (optional)</label><input id="ep" class="t" placeholder="http://localhost:3000/send" value="${S.ep}" oninput="S.ep=this.value.trim()"><label><input type="checkbox" ${S.auto?'checked':''} onchange="S.auto=this.checked"> Send automatically when a zone reaches High or Critical</label><div class="row" style="margin-top:8px"><button class="b p" onclick="if(!S.phone)$('ph').focus();else{sendSms(Z[S.sel],2);go('alerts')}">Send test SMS</button></div></div><div class="card"><h3>How real-time SMS works</h3><p>This page runs in a sandbox, so it cannot call an SMS provider directly. Two options:</p><p><b>Tap to send.</b> Each alert lands in the SMS outbox with an Open in Messages link that fills in your phone's SMS app.</p><p><b>Fully automatic.</b> Run the sms-server.js file with your Twilio key, open this page from the downloaded file, and paste the backend URL here.</p><div class="note">Never put API keys in this page. Anyone can read them.</div></div></div>`;
 let LU={};try{LU=JSON.parse(localStorage.getItem('ls_users')||'{}')}catch(e){}
@@ -1095,16 +565,16 @@ if(n.length<2)return e('Enter your name.');if(!/^[a-z0-9_]{3,20}$/.test(u))retur
 if(API){try{const j=await ap('POST','/api/auth/signup',{name:n,username:u,password:p,phone:ph,zone:+$('sz').value});TOK=j.token;enter(j.user.n,j.user.r,j.user);syncAll();if(!S.poll)S.poll=setInterval(syncAll,15000);return}catch(x){if(x.status)return e(x.message)}}
 LU[u]={h:await hh(u+':'+p),name:n,phone:ph,zone:+$('sz').value,r:'Public'};saveU();enter(u,'Public',LU[u])}
 function tab(n){$('lf').style.display=n==1?'':'none';$('sf').style.display=n==2?'':'none';$('t1').setAttribute('aria-pressed',n==1);$('t2').setAttribute('aria-pressed',n==2)}
-const tr=z=>{const a=z.tr||[];if(a.length<4)return'';const d=a[a.length-1]-a[0],s=d>6?'▲▲':d>2?'▲':d<-6?'▼▼':d<-2?'▼':'●';return`<span style="color:${d>2?'#dc2626':d<-2?'#16a34a':'var(--mu)'}" title="Trend over the last few readings">${s}</span>`};
+const tr=z=>{const a=z.tr||[];if(a.length<4)return'';const d=a[a.length-1]-a[0],s=d>6?'▲▲':d>2?'▲':d<-6?'▼▼':d<-2?'▼':'●';return`<span style="color:${d>2?'var(--r3)':d<-2?'var(--r0)':'var(--mu)'}" title="Trend over the last few readings">${s}</span>`};
 const lastChk=()=>{const c=S.checks.find(x=>x.u==S.user.n);return c?`<div class="note">Last check-in ${c.t}: ${c.k=='safe'?'marked safe':'help requested, officers have been notified'}</div>`:''};
 function chk(k){if(TOK)ap('POST','/api/checkins',{kind:k}).catch(()=>{});S.checks.unshift({t:tt(),u:S.user.n,z:Z[S.user.zone].n,k});S.checks=S.checks.slice(0,20);render()}
 function banner(){const n=S.checks.filter(c=>c.k=='help'&&!c.d).length,p=S.reps.filter(r=>r.st=='Pending').length;return n||p?`<div class="warn">${n?`<b>${n} help request${n>1?'s':''}</b>`:''}${n&&p?' and ':''}${p?`<b>${p} citizen report${p>1?'s':''} awaiting review</b>`:''}. <a href="#" onclick="go('${n?'alerts':'rep'}');return false">Review</a></div>`:''}
-function checks(){return`<div class="card" style="margin-top:12px"><h3>Citizen check-ins (${S.checks.length})</h3>${S.checks.length?S.checks.map((c,i)=>`<div class="al" style="border-color:${c.k=='help'&&!c.d?'#dc2626':'#16a34a'}"><b>${c.t}</b> ${c.u} in ${c.z}: ${c.k=='safe'?'marked safe':c.d?'help request handled':'NEEDS HELP'}${c.k=='help'&&!c.d?` <button class="b" onclick="hand(${i})">Mark handled</button>`:''}</div>`).join(''):'<div class="note">No check-ins yet. Residents check in from their dashboard.</div>'}</div>`}
+function checks(){return`<div class="card" style="margin-top:12px"><h3>Citizen check-ins (${S.checks.length})</h3>${S.checks.length?S.checks.map((c,i)=>`<div class="al" style="border-color:${c.k=='help'&&!c.d?'var(--r3)':'var(--r0)'}"><b>${c.t}</b> ${c.u} in ${c.z}: ${c.k=='safe'?'marked safe':c.d?'help request handled':'NEEDS HELP'}${c.k=='help'&&!c.d?` <button class="b" onclick="hand(${i})">Mark handled</button>`:''}</div>`).join(''):'<div class="note">No check-ins yet. Residents check in from their dashboard.</div>'}</div>`}
 function hand(i){const c=S.checks[i];c.d=1;if(TOK&&c.id)ap('PATCH','/api/checkins/'+c.id+'/handled').catch(()=>{});render()}
 function sendRep(){const zi=S.rz??S.user.zone,hz=S.rh||HZ[0],loc=()=>{S.reps.unshift({id:'LR-'+(1100+S.reps.length+1),zi,hz,u:S.user.n,t:tt(),st:'Pending'});render()};if(TOK)ap('POST','/api/reports',{zone:zi,hazard:hz}).then(r=>{S.reps.unshift(r);render()}).catch(loc);else loc()}
 function verify(i,ok){const r=S.reps[i];r.st=ok?'Verified':'Dismissed';if(TOK&&r.dbid)ap('PATCH','/api/reports/'+r.dbid,{status:r.st}).catch(()=>{});Z[r.zi].bonus=Math.min(15,6*S.reps.filter(x=>x.zi==r.zi&&x.st=='Verified').length);update()}
 function repPage(){const st=pro(),zi=S.rz??S.user.zone,rows=S.reps.map((r,i)=>[r,i]).filter(([r])=>st||r.u==S.user.n);
-const list=`<div class="card"><h3>${st?'Citizen reports':'My reports'} (${rows.length})</h3>${rows.length?rows.map(([r,i])=>`<div class="al" style="border-color:${r.st=='Verified'?'#dc2626':r.st=='Pending'?'#eab308':'#94a3b8'}"><b>${r.id}</b> ${Z[r.zi].n}: ${r.hz}<br><span class="note">${esc(r.u)} at ${r.t}: ${r.st}</span>${st&&r.st=='Pending'?`<div class="row" style="margin-top:6px"><button class="b p" onclick="verify(${i},1)">Verify</button><button class="b" onclick="verify(${i},0)">Dismiss</button></div>`:''}</div>`).join(''):'<div class="note">No reports yet.</div>'}</div>`;
+const list=`<div class="card"><h3>${st?'Citizen reports':'My reports'} (${rows.length})</h3>${rows.length?rows.map(([r,i])=>`<div class="al" style="border-color:${r.st=='Verified'?'var(--r3)':r.st=='Pending'?'var(--r1)':'#94a3b8'}"><b>${r.id}</b> ${Z[r.zi].n}: ${r.hz}<br><span class="note">${esc(r.u)} at ${r.t}: ${r.st}</span>${st&&r.st=='Pending'?`<div class="row" style="margin-top:6px"><button class="b p" onclick="verify(${i},1)">Verify</button><button class="b" onclick="verify(${i},0)">Dismiss</button></div>`:''}</div>`).join(''):'<div class="note">No reports yet.</div>'}</div>`;
 if(st)return list;
 return`<div class="split"><div class="card"><h3>Report what you see</h3><label for="rz">Area</label><select id="rz" onchange="S.rz=+this.value">${Z.map((x,i)=>`<option value="${i}"${i==zi?' selected':''}>${x.n}</option>`).join('')}</select><label for="rh">What did you notice?</label><select id="rh" onchange="S.rh=this.value">${HZ.map(h=>`<option${h==S.rh?' selected':''}>${h}</option>`).join('')}</select><div class="row" style="margin-top:8px"><button class="b p" onclick="sendRep()">Submit report</button></div><div class="note">Officers review reports. A confirmed report raises that area's risk score.</div></div>${list}</div>`}
 function users(){const L=TOK?(S.ul||{}):LU,ks=Object.keys(L);return`<div class="card" style="margin-top:12px"><h3>Registered accounts (${ks.length})</h3>${ks.length?ks.map(k=>`<div class="al" style="border-color:var(--ac)"><b>${esc(L[k].name)}</b> (${k}) in ${Z[L[k].zone].n}: ${L[k].r} <button class="b" onclick="setRole('${k}')">${L[k].r=='Public'?'Make Field Officer':'Make Public'}</button> <button class="b" onclick="delU('${k}')">Remove</button></div>`).join(''):'<div class="note">No sign-ups yet. New users can create an account on the login page.</div>'}</div>`}
@@ -1112,7 +582,7 @@ function setRole(k){if(TOK){const nr=S.ul[k].r=='Public'?'Field Officer':'Public
 function delU(k){if(TOK){ap('DELETE','/api/users/'+k).then(()=>{delete S.ul[k];render()}).catch(()=>{});return}delete LU[k];saveU();render()}
 const _d=P.dash,_a=P.alerts,_s=P.set;P.dash=()=>pro()?banner()+_d():mine()+pubD();P.alerts=()=>pro()?_a()+checks()+outbox():pubA();P.set=()=>_s()+users();P.rep=repPage;
 function render(){if(!S.user)return;if(!RP[S.user.r].includes(S.pg))S.pg='dash';document.body.dataset.pg=S.pg;const PH={dash:['⛰️','Landslide safety status','Live risk levels for monitored areas in North East India, with clear advice for each.',['Live status','Safety advice']],map:['🗺️','Risk map','Tap a zone to see its current risk level and what to do.',['Satellite view','Rainfall']]},h=pro()?HERO[S.pg]:(PH[S.pg]||HERO[S.pg]);
-$('nav').innerHTML=PG.filter(p=>RP[S.user.r].includes(p[0])).map(p=>`<button class="${p[0]==S.pg?'on':''}" onclick="go('${p[0]}')"><i>${p[2]}</i>${p[1]}</button>`).join('');
+$('nav').innerHTML=PG.filter(p=>RP[S.user.r].includes(p[0])).map(p=>`<button class="${p[0]==S.pg?'on':''}" onclick="go('${p[0]}')"><i aria-hidden="true">${ICONS[p[0]]||""}</i>${p[1]}</button>`).join('');
 $('pg').innerHTML=`<div class="hero">${S.pg=='dash'||S.pg=='map'||S.pg=='sens'?'<div class="rain"></div>':''}<div class="ic">${h[0]}</div><h1>${h[1]}</h1><p>${h[2]}</p><div class="chips">${h[3].map(c=>`<span>${c}</span>`).join('')}</div></div>${S.sen||S.sat?'':'<div class="warn">Both data sources are off. Only static GIS terrain is available, so live risk cannot be calculated.</div>'}`+P[S.pg]();
 $('who').innerHTML=S.user.n+' ('+S.user.r+')<br><button class="b" onclick="logout()">Sign out</button>';$('topb').style.display=pro()?'':'none';syncTop();
 if(S.pg=='map')draw(S.layer,$('cv'));if(S.pg=='sat')['sat','ndvi','rain','insar'].forEach(k=>draw(k,$('m_'+k)))}
@@ -1178,8 +648,8 @@ Z.forEach((z,i)=>{z.h=R.filter(p=>hav(D[i][2],D[i][3],p[0],p[1])<=25).length;mar
 function resetSrc(){Z.forEach((z,i)=>{z.rain=D[i][4];z.sl=D[i][6];z.h=D[i][7];z.nv=z.iv=z.el=undefined;z.live={}});lg('All sources back to demo values.',1);update()}
 function tpl(){const t='zone,rain_mm_24h,ndvi,insar_mm,slope_deg,elevation_m,past_slides\n'+Z.map(z=>z.n+',,,,,,').join('\n')+'\n',a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='landsafe_zone_feed_template.csv';a.click()}
 
-const PV=(z,k)=>{const l=z.live[k];return l?`<span class="bd" style="background:#16a34a" title="${esc(l.s)}, ${l.t}">live</span>`:'<span class="bd" style="background:#94a3b8">demo</span>'};
-const srcStatus=s=>{const n=liveN(s.k);return n?`<span class="bd" style="background:#16a34a">${n}/${Z.length} live</span>`:'<span class="bd" style="background:#94a3b8">demo data</span>'};
+const PV=(z,k)=>{const l=z.live[k];return l?`<span class="bd bd-src on" title="${esc(l.s)}, ${l.t}">live</span>`:'<span class="bd bd-src">demo</span>'};
+const srcStatus=s=>{const n=liveN(s.k);return n?`<span class="bd bd-src on">${n}/${Z.length} live</span>`:'<span class="bd bd-src">demo data</span>'};
 window.runBacktestUI = async function() {
   const el = $('bt_res');
   if (!el) return;
@@ -1192,8 +662,8 @@ window.runBacktestUI = async function() {
   }
 };
 P.src=()=>`<div class="card sc" style="margin-bottom:12px"><h3>Connected sources</h3><table><tr><th>Source</th><th>Dataset</th><th>Feeds</th><th>Resolution, revisit</th><th>Status</th></tr>${SRC.map(s=>`<tr><td><b>${s.n}</b></td><td>${s.p}</td><td>${s.f}</td><td>${s.r}</td><td>${srcStatus(s)}</td></tr>`).join('')}</table><div class="note">Zone scores use the values in the table at the bottom. The raster layers on the map pages stay schematic. Ground soil-moisture nodes are still simulated until real ESP32 data is wired in.</div></div>
-<div class="card" style="margin-bottom:12px;background:linear-gradient(135deg,rgba(14,165,233,0.06),rgba(56,189,248,0.03));border:1px solid rgba(14,165,233,0.3)">
-<h3>🧪 Explainable Physics Model & NASA GLC Historical Backtest</h3>
+<div class="card" style="margin-bottom:12px">
+<h3>How the risk score is explained, and how it held up against past landslides</h3>
 <p>Our scoring model implements empirical slope-adjusted rainfall intensity-duration thresholds: <code>I_crit = max(25, 75 - (slope - 15) * 0.8) mm/24h</code>, volumetric soil liquefaction thresholds (&ge;75%), and Sentinel-1 InSAR surface displacement velocity.</p>
 <div class="row" style="margin-bottom:8px">
 <button class="b p" onclick="runBacktestUI()">Run Live NASA GLC Backtest</button>
@@ -1206,7 +676,7 @@ P.src=()=>`<div class="card sc" style="margin-bottom:12px"><h3>Connected sources
 <div class="split" style="margin-bottom:12px"><div class="card"><h3>Quick connect (no account needed)</h3><div class="row"><button class="b p" onclick="connDEM()">Connect Copernicus DEM</button><button class="b p" onclick="connRain()">Connect rainfall</button><button class="b" onclick="resetSrc()">Back to demo data</button></div><p>DEM: elevation from Copernicus GLO-90, slope calculated from five points around each zone.</p><p>Rainfall: precipitation over the last 24 hours from Open-Meteo. It stands in for GPM or CHIRPS, which come through the feed.</p><div class="note">Needs internet. Connecting real data switches the live simulation off and resets storm intensity to 0, so scores show real conditions. Raise the slider for a what-if on top.</div></div>
 <div class="card"><h3>Historical landslide records</h3><label for="fc">NASA Global Landslide Catalog CSV</label><input id="fc" class="t" type="file" accept=".csv" onchange="fileCat(this.files[0])"><div class="note">Needs latitude and longitude columns. Events within 25 km of each zone are counted and replace the demo slide count, which raises or lowers the terrain multiplier.</div></div></div>
 <div class="split" style="margin-bottom:12px"><div class="card"><h3>Satellite feed (Sentinel-1, Sentinel-2, GPM, CHIRPS)</h3><label for="fu">Feed URL (JSON from your backend, CORS enabled)</label><input id="fu" class="t" placeholder="https://your-server/zone_metrics.json" value="${esc(S.fu||'')}" oninput="S.fu=this.value.trim()"><div class="row"><button class="b p" onclick="pullFeed()">Fetch feed</button><button class="b" onclick="tpl()">Download CSV template</button></div><label for="ff" style="margin-top:8px">Or load a file (CSV or JSON)</label><input id="ff" class="t" type="file" accept=".csv,.json" onchange="fileFeed(this.files[0])"><div class="note">Columns: zone, rain_mm_24h, ndvi, insar_mm, slope_deg, elevation_m, past_slides. Empty cells keep the demo value. When this console is served by the LANDSAFE backend, rainfall, soil moisture, elevation, slope and past-slide counts are filled in automatically from Open-Meteo and the NASA Global Landslide Catalog. NDVI and InSAR stay at demo values until you add a feed.</div></div>
-<div class="card"><h3>Connection log</h3>${LOG.length?LOG.map(l=>`<div class="al" style="border-color:${l.ok?'#16a34a':'#dc2626'}"><b>${l.t}</b> ${esc(l.m)}</div>`).join(''):'<div class="note">Nothing connected yet.</div>'}</div></div>
+<div class="card"><h3>Connection log</h3>${LOG.length?LOG.map(l=>`<div class="al" style="border-color:${l.ok?'var(--r0)':'var(--r3)'}"><b>${l.t}</b> ${esc(l.m)}</div>`).join(''):'<div class="note">Nothing connected yet.</div>'}</div></div>
 <div class="card sc"><h3>Values used for scoring</h3><table><tr><th>Zone</th><th>Elevation</th><th>Slope</th><th>Rain 24 h</th><th>NDVI</th><th>Ground movement</th><th>Past slides</th><th>Risk</th></tr>${Z.map(z=>`<tr><td>${z.n}</td><td>${z.el!=null?Math.round(z.el)+' m':'n/a'}</td><td>${z.sl}° ${PV(z,'sl')}</td><td>${Math.round(z.rain*10)/10} mm ${PV(z,'rain')}</td><td>${z.ndvi.toFixed(2)} ${PV(z,'nv')}</td><td>${z.ins.toFixed(1)} mm ${PV(z,'iv')}</td><td>${z.h} ${PV(z,'h')}</td><td>${bd(z)} ${z.sc}%</td></tr>`).join('')}</table><div class="note">Green live badges show which values came from a connected source. Hover a badge for the source and time.</div></div>`;
 Z.forEach(z=>z.live=z.live||{});
 
