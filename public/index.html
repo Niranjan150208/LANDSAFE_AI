@@ -105,7 +105,7 @@ nav i svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-
 .who .b:hover { background: #1a2520; border-color: #4a5d53; }
 
 /* ---------- Workspace ---------- */
-main { padding: 20px 28px 48px; min-width: 0; max-width: 1280px; }
+main { padding: 20px 28px 48px; min-width: 0; }
 
 .card {
   background: var(--card);
@@ -316,6 +316,32 @@ button.btn-help:hover { background: #a82722; }
 .dm { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .dm .b { min-height: 36px; padding: 6px 8px; font-size: 13px; }
 
+
+/* ---------- Live status rail (wide screens, officers and admins) ---------- */
+#rail { display: none; }
+@media (min-width: 1500px) {
+  .app.has-rail { grid-template-columns: 232px minmax(0, 1fr) 330px; }
+  .app.has-rail #rail {
+    display: block; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    padding: 20px 22px 28px 6px; align-self: start;
+  }
+}
+#rail h2 { margin: 0 0 12px; font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
+#rail h3 { margin: 24px 0 8px; font-size: 14px; font-weight: 600; color: var(--mu); }
+.rl-bar { display: flex; gap: 2px; height: 12px; border-radius: 3px; overflow: hidden; background: var(--sf); }
+.rl-bar i { display: block; min-width: 6px; }
+.rl-key { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; font-size: 12.5px; color: var(--mu); }
+.rl-key b { display: block; font-family: var(--display); font-size: 22px; line-height: 1.1; color: var(--tx); }
+.rl-z { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; width: 100%; padding: 9px 4px; border: 0; border-bottom: 1px solid var(--bd); background: transparent; color: var(--tx); font: inherit; text-align: left; cursor: pointer; }
+.rl-z:hover { background: var(--sf); }
+.rl-z span { font-size: 14px; font-weight: 500; min-width: 0; }
+.rl-z small { display: block; font-size: 12.5px; font-weight: 400; color: var(--mu); }
+.rl-z em { font-style: normal; font-weight: 700; min-width: 3.2ch; text-align: right; font-size: 14px; }
+.rl-a { padding: 8px 12px; margin-bottom: 8px; border-left: 3px solid; border-radius: 0 6px 6px 0; background: var(--sf); font-size: 13.5px; line-height: 1.4; }
+.rl-a small { display: block; margin-top: 2px; font-size: 12.5px; color: var(--mu); }
+.rl-help { display: block; width: 100%; margin-top: 16px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--r3) 55%, transparent); border-radius: 6px; background: color-mix(in srgb, var(--r3) 12%, transparent); color: var(--tx); font: 500 14px var(--body); text-align: left; cursor: pointer; }
+.rl-help b { color: var(--r3); }
+
 /* ---------- Low-bandwidth mode ---------- */
 body.low-bw .pulse, body.low-bw .live { animation: none !important; }
 body.low-bw .mapw canvas { display: none !important; }
@@ -365,7 +391,7 @@ body.low-bw .hero::before, body.low-bw .lg-art::before { display: none; }
   <button class="b" onclick="rstSim()">Stop simulation</button>
 </div>
 <div id="pg"></div>
-</main></div>
+</main><section id="rail" aria-label="Live status"></section></div>
 <div id="lg"><section class="lg-art" aria-hidden="false"><div class="lg-brand"><img src="/logo.png" alt="" class="lg-logo-img"><b>LANDSAFE AI</b></div>
 <div><h2>Landslide warnings for North East India</h2><p>Ground sensors, satellite data and terrain maps combine into one risk score for each of 16 monitored zones.</p></div></section>
 <div class="lg-form"><div class="card"><h1>Welcome back</h1><div class="note" style="margin:0">Sign in to the early-warning console.</div>
@@ -581,11 +607,15 @@ function users(){const L=TOK?(S.ul||{}):LU,ks=Object.keys(L);return`<div class="
 function setRole(k){if(TOK){const nr=S.ul[k].r=='Public'?'Field Officer':'Public';ap('PATCH','/api/users/'+k+'/role',{role:nr}).then(()=>{S.ul[k].r=nr;render()}).catch(()=>{});return}LU[k].r=LU[k].r=='Public'?'Field Officer':'Public';saveU();render()}
 function delU(k){if(TOK){ap('DELETE','/api/users/'+k).then(()=>{delete S.ul[k];render()}).catch(()=>{});return}delete LU[k];saveU();render()}
 const _d=P.dash,_a=P.alerts,_s=P.set;P.dash=()=>pro()?banner()+_d():mine()+pubD();P.alerts=()=>pro()?_a()+checks()+outbox():pubA();P.set=()=>_s()+users();P.rep=repPage;
+function railHtml(){const zs=[...Z].sort((a,b)=>b.sc-a.sc),cnt=[0,0,0,0];Z.forEach(z=>cnt[z.lv]++);const help=S.checks.filter(c=>c.k=='help'&&!c.d).length;
+return`<h2>Right now</h2><div class="rl-bar" role="img" aria-label="Zones by risk level: ${cnt.map((n,i)=>n+' '+LV[i][0].toLowerCase()).join(', ')}">${cnt.map((n,i)=>n?`<i style="flex:${n};background:var(--r${i})"></i>`:'').join('')}</div><div class="rl-key">${cnt.map((n,i)=>`<span><b>${n}</b>${LV[i][0].toLowerCase()}</span>`).join('')}</div>
+<h3>Highest risk</h3>${zs.slice(0,5).map(z=>`<button class="rl-z" onclick="S.sel=${Z.indexOf(z)};go('map')"><span>${z.n}<small>${z.s}</small></span>${bd(z)}<em>${z.sc}%</em></button>`).join('')}
+<h3>Latest alerts</h3>${S.al.length?S.al.slice(0,4).map(a=>`<div class="rl-a" style="border-color:${LV[a.lv][1]}"><b>${a.t}</b> ${a.z}<small>${a.m}</small></div>`).join(''):'<p class="note" style="margin:0">No alerts yet.</p>'}${help?`<button class="rl-help" onclick="go('alerts')"><b>${help}</b> help request${help>1?'s':''} waiting. Open alerts</button>`:''}`}
 function render(){if(!S.user)return;if(!RP[S.user.r].includes(S.pg))S.pg='dash';document.body.dataset.pg=S.pg;const PH={dash:['⛰️','Landslide safety status','Live risk levels for monitored areas in North East India, with clear advice for each.',['Live status','Safety advice']],map:['🗺️','Risk map','Tap a zone to see its current risk level and what to do.',['Satellite view','Rainfall']]},h=pro()?HERO[S.pg]:(PH[S.pg]||HERO[S.pg]);
 $('nav').innerHTML=PG.filter(p=>RP[S.user.r].includes(p[0])).map(p=>`<button class="${p[0]==S.pg?'on':''}" onclick="go('${p[0]}')"><i aria-hidden="true">${ICONS[p[0]]||""}</i>${p[1]}</button>`).join('');
 $('pg').innerHTML=`<div class="hero">${S.pg=='dash'||S.pg=='map'||S.pg=='sens'?'<div class="rain"></div>':''}<div class="ic">${h[0]}</div><h1>${h[1]}</h1><p>${h[2]}</p><div class="chips">${h[3].map(c=>`<span>${c}</span>`).join('')}</div></div>${S.sen||S.sat?'':'<div class="warn">Both data sources are off. Only static GIS terrain is available, so live risk cannot be calculated.</div>'}`+P[S.pg]();
 $('who').innerHTML=S.user.n+' ('+S.user.r+')<br><button class="b" onclick="logout()">Sign out</button>';$('topb').style.display=pro()?'':'none';syncTop();
-if(S.pg=='map')draw(S.layer,$('cv'));if(S.pg=='sat')['sat','ndvi','rain','insar'].forEach(k=>draw(k,$('m_'+k)))}
+if(S.pg=='map')draw(S.layer,$('cv'));if(S.pg=='sat')['sat','ndvi','rain','insar'].forEach(k=>draw(k,$('m_'+k)));const rl=$('rail');if(rl){rl.innerHTML=pro()?railHtml():'';document.querySelector('.app').classList.toggle('has-rail',pro())}}
 function go(p){if(S.user&&!RP[S.user.r].includes(p))return;S.pg=p;render();scrollTo(0,0)}
 $('storm').oninput=e=>{S.live=0;S.l=e.target.value/100;update()};
 $('sim').onclick=()=>{clearInterval(S.tm);S.live=0;S.l=0;S.tm=setInterval(()=>{S.l=Math.min(1,S.l+.02);$('storm').value=S.l*100;update();if(S.l>=1)clearInterval(S.tm)},170)};
