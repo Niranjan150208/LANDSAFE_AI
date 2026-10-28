@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Public+Sans:wght@400;500;600;700&display=swap">
 <meta name="theme-color" content="#0a0f0d">
+<meta name="description" content="LANDSAFE AI: landslide early-warning console for North East India. Ground sensors, rainfall, satellite and terrain data combined into one explainable risk score for 16 zones, with local-language SMS alerts.">
 <style>
 /* LANDSAFE AI — night survey sheet.
    Colour is reserved for risk (--r0..--r3). Everything else is mineral neutral. */
@@ -377,13 +378,43 @@ body.low-bw .hero::before, body.low-bw .lg-art::before { display: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ===== UI polish layer ===== */
+/* Demo controls stay reachable while scrolling (desktop) */
+.top-cap { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--mu); margin-right: 4px; }
+@media (min-width: 861px) { .top { position: sticky; top: 8px; z-index: 30; } }
+/* Data status strip: live / demo / simulated */
+.dstat { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 14px; padding: 10px 14px; border: 1px solid var(--bd); border-radius: var(--radius); background: var(--card); font-size: 13px; }
+.dstat > b { font-size: 13px; }
+.dstat .row { gap: 6px; }
+.dstat .note { margin: 0; }
+.bd-src.sim { color: var(--r1); border-color: color-mix(in srgb, var(--r1) 45%, transparent); background: color-mix(in srgb, var(--r1) 10%, transparent); }
+/* Demo guide */
+.guide { margin: 0 0 14px; border: 1px solid var(--bd); border-left: 4px solid var(--ac); border-radius: var(--radius); background: var(--card); }
+.guide summary { cursor: pointer; padding: 11px 16px; font-weight: 600; font-size: 14px; }
+.guide .gb { padding: 0 16px 14px; font-size: 14px; }
+.guide ol { margin: 0 0 12px; padding-left: 20px; line-height: 1.7; }
+/* Risk legend */
+.rlg { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 4px 0 10px; font-size: 12.5px; color: var(--mu); }
+/* Sign-in: demo first, brand larger */
+.lg-brand .lg-logo-img { width: 60px; height: 60px; border-radius: 14px; box-shadow: 0 0 0 1px #2b3a33, 0 0 30px rgba(45, 226, 230, .18); }
+.lg-brand b { font-size: 22px; }
+.lg-steps { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 10px; max-width: 46ch; }
+.lg-steps li { display: grid; grid-template-columns: 74px 1fr; gap: 10px; font-size: 14.5px; color: #a9bab0; line-height: 1.45; }
+.lg-steps b { color: #e8ece5; font-family: var(--display); letter-spacing: .02em; }
+.lg-status { display: inline-block; margin-top: 20px; padding: 3px 10px; border: 1px solid #3a4a42; border-radius: 4px; font-size: 12.5px; color: #96a79d; }
+.lg-demo { margin: 18px 0 0; padding: 0 0 18px; border-top: 0; border-bottom: 1px solid var(--bd); }
+.lg-demo small { margin-bottom: 10px; }
+.dm { grid-template-columns: 1fr 1fr; }
+.dm .dm-main { grid-column: 1 / -1; min-height: 46px; font-size: 15px; }
 </style></head><body data-pg="dash">
 <div class="app"><aside><div class="logo"><img src="/logo.png" alt="LANDSAFE AI Logo" class="logo-img"><div class="logo-text"><b>LANDSAFE AI</b><small>North East India</small></div></div><nav id="nav"></nav><div class="who" id="who"></div></aside>
 <main>
 <div class="card top" id="topb">
+<span class="top-cap">Demo controls</span>
 <label for="storm">Storm intensity <b id="sv">0%</b></label><input id="storm" type="range" min="0" max="100" value="0">
-<button class="b p" id="sim">Simulate storm</button><button class="b" id="rst">Reset</button><button class="b" id="lv" aria-pressed="true">Live feed: on</button>
-<button class="b" id="sen" aria-pressed="true">Ground sensors: on</button><button class="b" id="sat" aria-pressed="true">Satellite: on</button>
+<button class="b p" id="sim">Simulate storm</button><button class="b" id="rst">Reset</button><button class="b" id="lv" aria-pressed="true" title="Slowly varies the simulated storm on its own. Turn off to hold the slider where you set it.">Auto-simulation: on</button>
+<button class="b" id="sen" aria-pressed="true" title="Simulated soil-moisture nodes. Turn off to see scores fall back to the satellite estimate.">Ground sensors: on</button><button class="b" id="sat" aria-pressed="true">Satellite: on</button>
 <button class="b" id="bw" aria-pressed="false" onclick="toggleLowBw()">Low-bandwidth: off</button>
 </div>
 <div id="sim-banner" style="display:none" class="sim-banner">
@@ -393,12 +424,12 @@ body.low-bw .hero::before, body.low-bw .lg-art::before { display: none; }
 <div id="pg"></div>
 </main><section id="rail" aria-label="Live status"></section></div>
 <div id="lg"><section class="lg-art" aria-hidden="false"><div class="lg-brand"><img src="/logo.png" alt="" class="lg-logo-img"><b>LANDSAFE AI</b></div>
-<div><h2>Landslide warnings for North East India</h2><p>Ground sensors, satellite data and terrain maps combine into one risk score for each of 16 monitored zones.</p></div></section>
-<div class="lg-form"><div class="card"><h1>Welcome back</h1><div class="note" style="margin:0">Sign in to the early-warning console.</div>
+<div><h2>Landslide warnings for North East India</h2><p>Heavy rain saturates steep hill slopes, and remote villages often get little warning. LANDSAFE AI combines ground sensors, rainfall, satellite data and terrain maps into one explainable risk score for each of 16 monitored zones.</p><ul class="lg-steps"><li><b>Sense</b><span>Soil moisture, rainfall, ground movement, slope</span></li><li><b>Score</b><span>One risk score per zone, with the reasons shown</span></li><li><b>Alert</b><span>SMS in the local language to people in the danger range</span></li></ul><span class="lg-status">Prototype: values are demo data unless a source is connected</span></div></section>
+<div class="lg-form"><div class="card"><h1>Welcome back</h1><div class="note" style="margin:0">Sign in to the early-warning console.</div><div class="lg-demo"><small>No account needed: try the demo</small><div class="dm"><button class="b p dm-main" type="button" onclick="demo('officer')">&#9654; Open the live demo (Field Officer)</button><button class="b" type="button" onclick="demo('admin')">Admin view</button><button class="b" type="button" onclick="demo('public')">Resident view</button></div></div>
 <div class="lg-tabs" role="group" aria-label="Sign in or create account"><button class="b" type="button" id="t1" aria-pressed="true" onclick="tab(1)">Sign in</button><button class="b" type="button" id="t2" aria-pressed="false" onclick="tab(2)">Create account</button></div>
 <form id="lf"><label for="lu">Username</label><input id="lu" autocomplete="username"><label for="lp">Password</label><input id="lp" type="password" autocomplete="current-password"><div class="err" id="le" role="alert"></div><button class="b p">Sign in</button></form>
 <form id="sf" style="display:none"><label for="sn">Full name</label><input id="sn" autocomplete="name"><label for="su">Username (letters, numbers, underscore)</label><input id="su" autocomplete="username"><label for="sp">Password (at least 8 characters)</label><input id="sp" type="password" autocomplete="new-password"><label for="sph">Phone with country code (optional)</label><input id="sph" inputmode="tel" placeholder="+91XXXXXXXXXX"><label for="sz">My home area</label><select id="sz"></select><div class="err" id="se" role="alert"></div><button class="b p">Create account</button></form>
-<div class="lg-demo"><small>Or explore with a demo account</small><div class="dm"><button class="b" type="button" onclick="demo('admin')">Admin</button><button class="b" type="button" onclick="demo('officer')">Officer</button><button class="b" type="button" onclick="demo('public')">Resident</button></div></div></div></div></div>
+</div></div></div>
 <script>
 const LV=[['LOW','#10b981'],['MODERATE','#fbbf24'],['HIGH','#f97316'],['CRITICAL','#ef4444']],TH=[0,40,60,80],EX=['','Low','Medium','High'],IN=['','Low','Major road','Critical road'];
 const BD_CLS=['bd-low','bd-moderate','bd-high','bd-critical'],BD_SYM=['●','▲','■','✖'];
@@ -410,7 +441,7 @@ nodes:[0,1,2].map(k=>({o:(rnd()-.5)*5,j:0,b:65+Math.round(rnd()*30),x:px(a[3])+(
 const S={pg:'dash',sel:8,l:0,tg:.85,live:1,hist:[],out:[],phone:'',ep:'',auto:1,user:null,checks:[],reps:[{id:'LR-1042',zi:8,hz:'Rockfall',u:'resident_gtk',t:'08:20',st:'Pending'},{id:'LR-1043',zi:5,hz:'Water seepage',u:'resident_cpj',t:'09:05',st:'Pending'}],rz:null,rh:null,sen:1,sat:1,layer:'sat',lang:'en',al:[],sent:0,rv:1,sn:1,tm:null};
 const ICONS={dash:'<svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="4.5" rx="1.5"/><rect x="13.5" y="11" width="7" height="9.5" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/></svg>',map:'<svg viewBox="0 0 24 24"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg>',sens:'<svg viewBox="0 0 24 24"><path d="M12 3.5s6 6.2 6 10.6a6 6 0 0 1-12 0C6 9.700 12 3.500 12 3.500z"/></svg>',sat:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.500"/><path d="M3.500 12h17M12 3.500c2.600 2.500 3.800 5.300 3.800 8.500S14.600 18 12 20.500C9.400 18 8.200 15.200 8.200 12S9.400 6 12 3.500z"/></svg>',alerts:'<svg viewBox="0 0 24 24"><path d="M6 16.500V11a6 6 0 0 1 12 0v5.500l1.500 2h-15z"/><path d="M10 21h4"/></svg>',rep:'<svg viewBox="0 0 24 24"><rect x="5" y="4.500" width="14" height="16.500" rx="2"/><path d="M9 4.500V3.500h6v1M8.500 11h7M8.500 15h5"/></svg>',set:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>',rng:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.500"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="9.500"/></svg>',src:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.500" ry="2.800"/><path d="M4.500 6v6c0 1.500 3.400 2.800 7.500 2.800s7.500-1.300 7.500-2.800V6M4.500 12v6c0 1.500 3.400 2.800 7.500 2.800s7.500-1.300 7.500-2.800v-6"/></svg>'};
 const PG=[['dash','Dashboard','▦'],['map','Risk Map (GIS)','◉'],['sens','Soil Sensors','⌁'],['sat','Satellite and GIS','✦'],['alerts','SMS Alerts','⚑'],['rep','Reports','✎'],['set','SMS Settings','⚙']];
-const HERO={dash:['⛰️','Landslide early-warning console','Ground soil-moisture sensors, satellite imagery and GIS terrain fused into one risk score for 16 NER zones.',['Soil sensors','Sentinel-1 InSAR','Sentinel-2 NDVI','GPM rainfall','DEM + geology']],
+const HERO={dash:['⛰️','Landslide early-warning console','Rain-soaked steep slopes fail with little warning. This console fuses soil moisture, rainfall, satellite ground movement and terrain into one explainable risk score for each of 16 zones, and alerts people in the danger range.',['Soil sensors','Sentinel-1 InSAR','Sentinel-2 NDVI','GPM rainfall','DEM + geology']],
 map:['🗺️','Risk map with satellite and GIS layers','Switch between satellite, vegetation, rainfall, ground movement and slope. Click a zone to see how its score is built.',['Satellite view','NDVI','InSAR','Slope']],
 sens:['💧','Soil-moisture sensor network','Three ESP32 nodes per zone report volumetric soil moisture over LoRa. Moisture near saturation is what turns heavy rain into slope failure.',['48 nodes','LoRa gateway','Battery and signal']],
 sat:['🛰️','Satellite imagery and GIS terrain','Wide-area coverage where sensors are sparse: rainfall, vegetation loss, ground movement, plus slope and road exposure from GIS.',['Sentinel-1','Sentinel-2','GPM IMERG','DEM']],
@@ -458,7 +489,7 @@ if(z.h>=5)z.reasons.push(`Historical susceptibility: ${z.h} recorded NASA GLC sl
 if(z.bonus)z.reasons.push(`${z.bonus/6} citizen hazard report(s) verified by field officers (+${z.bonus} pts)`);
 if(!z.reasons.length)z.reasons.push('Normal baseline sensor and satellite conditions');
 }
-function addA(z,m,lv){if(TOK&&pro()&&S.auto&&lv>=2)ap('POST','/api/alerts',{zone:Z.indexOf(z),level:lv,message:'LANDSAFE '+LV[lv][0]+': '+z.n+'. '+ADV[lv]}).catch(()=>{});S.al.unshift({t:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}),z:z.n,m,lv});S.al=S.al.slice(0,12)}
+function addA(z,m,lv){if(TOK&&pro()&&S.auto&&lv>=2&&S.l<0.01)ap('POST','/api/alerts',{zone:Z.indexOf(z),level:lv,message:'LANDSAFE '+LV[lv][0]+': '+z.n+'. '+ADV[lv]}).catch(()=>{});S.al.unshift({t:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}),z:z.n,m,lv});S.al=S.al.slice(0,12)}
 const pop=z=>z.ex*800+z.inf*500+z.h*150;
 function update(){Z.forEach(z=>{calc(z);z.tr=(z.tr||[]).concat(z.sc).slice(-6);let l=0;for(let n=1;n<4;n++)if(z.sc>=TH[n])l=n;if(l<z.lv&&z.sc>=TH[z.lv]-3)l=z.lv;
 if(l>z.lv&&l>=2){S.sent+=pop(z);if(S.auto)sendSms(z,l);addA(z,`${LV[l][0]}: SMS sent to ${pop(z).toLocaleString()} registered phones within 5 km`,l)}
@@ -479,11 +510,11 @@ if(S.sn&&pro())z.nodes.forEach((n,k)=>{const m=z.nd?z.nd[k]:50,f=m>85?'var(--r3)
 s+=`<g style="cursor:pointer" onclick="S.sel=${i};render()"><circle cx="${z.x}" cy="${z.y}" r="${on?10:7}" fill="${c}" stroke="#fff" stroke-width="2.5"><title>${z.n}: ${z.sc}% ${LV[z.lv][0]}</title></circle><text x="${z.x}" y="${z.y-13}" text-anchor="middle" font-size="${on?12:10}" font-weight="700" fill="#fff" stroke="#000" stroke-opacity=".7" stroke-width="3" paint-order="stroke">${on?z.n+' ':''}${z.sc}%</text></g>`});return s}
 const P={
 dash(){const z=[...Z].sort((a,b)=>b.sc-a.sc),n=Z.length*3,av=Z.reduce((a,x)=>a+x.so,0)/Z.length;
-return`<div class="g g4"><div class="card stat"><b>${Z.filter(x=>x.lv>=2).length}</b><span>Zones at High or Critical</span></div><div class="card stat"><b>${av.toFixed(0)}%</b><span>Average soil moisture (${S.sen?'sensors':'satellite estimate'})</span></div><div class="card stat"><b>${S.sen?n:0}/${n}</b><span>Sensor nodes online</span></div><div class="card stat"><b>${S.sent.toLocaleString()}</b><span>SMS alerts sent</span></div></div>
-<div class="card" style="margin-bottom:12px"><h3><span class="live"></span>Live trend</h3>${spark()}</div><div class="card" style="margin-bottom:12px"><h3>Data sources</h3><div class="row">${[['Ground sensor nodes (LoRa)',S.sen],['Sentinel-1 InSAR',S.sat],['Sentinel-2 NDVI',S.sat],['GPM IMERG rainfall',S.sat],['DEM and geology (GIS)',1]].map(a=>`<span class="bd bd-src${a[1]?' on':''}">${a[0]}: ${a[1]?'live':'off'}</span>`).join('')}</div></div>
+return`<div class="g g4"><div class="card stat"><b>${Z.filter(x=>x.lv>=2).length}</b><span>Zones at High or Critical</span></div><div class="card stat"><b>${av.toFixed(0)}%</b><span>Average soil moisture (${S.sen?'sensors':'satellite estimate'})</span></div><div class="card stat"><b>${S.sen?n:0}/${n}</b><span>Sensor nodes online (simulated)</span></div><div class="card stat"><b>${S.sent.toLocaleString()}</b><span>SMS alerts sent</span></div></div>
+<div class="card" style="margin-bottom:12px"><h3><span class="live"></span>Live trend</h3>${spark()}</div><div class="card" style="margin-bottom:12px"><h3>Data sources</h3><div class="row">${[['Ground sensor nodes (LoRa)',S.sen,0],['Sentinel-1 InSAR',S.sat,liveN('iv')],['Sentinel-2 NDVI',S.sat,liveN('nv')],['Rainfall (GPM / Open-Meteo)',S.sat,liveN('rain')],['DEM and geology (GIS)',1,liveN('sl')]].map(a=>`<span class="bd bd-src${a[1]&&a[2]?' on':a[1]?' sim':''}">${a[0]}: ${!a[1]?'off':a[2]?'live':'demo values'}</span>`).join('')}</div></div>
 <div class="card sc"><h3>Priority zones</h3><table><tr><th>Zone</th><th>State</th><th>Risk</th><th>Trend</th><th>Rain</th><th>Soil</th><th>InSAR</th><th>Slope</th></tr>${z.slice(0,8).map(x=>`<tr class="k" onclick="S.sel=${Z.indexOf(x)};go('map')"><td>${x.n}</td><td>${x.s}</td><td>${bd(x)} ${x.sc}%</td><td>${tr(x)}</td><td>${Math.round(x.rn)} mm</td><td>${x.so.toFixed(0)}%</td><td>${x.ins.toFixed(1)} mm</td><td>${x.sl}°</td></tr>`).join('')}</table><div class="note">Click a row to open it on the map.</div></div>`},
 map(){return`<div class="split"><div class="card"><h3>Data layers</h3><div class="row">${Object.keys(MAPS).filter(k=>pro()||k=='sat'||k=='rain').map(k=>`<button class="b" aria-pressed="${k==S.layer}" onclick="S.layer='${k}';render()">${MAPS[k]}</button>`).join('')}</div><div class="mapw"><canvas id="cv" width="${W}" height="${H}"></canvas><svg viewBox="0 0 600 400" role="img" aria-label="Map of 16 monitored zones in North East India">${mapSvg()}</svg></div><div class="row">${pro()?'<button class="b" aria-pressed="'+!!S.sn+'" onclick="S.sn=!S.sn;render()">Sensor nodes</button>':''}<button class="b" aria-pressed="${!!S.rv}" onclick="S.rv=!S.rv;render()">Rivers</button></div><div class="note">${LEG[S.layer]}${pro()?' Sensor nodes are coloured by soil moisture, from green (dry) to red (saturated).':''} Schematic map with simulated data.</div></div>${detail(Z[S.sel])}</div>`},
-sens(){const z=[...Z].sort((a,b)=>b.so-a.so);return`<div class="g g4"><div class="card stat"><b>${S.sen?Math.max(...Z.map(x=>x.so)).toFixed(0)+'%':'off'}</b><span>Wettest zone average</span></div><div class="card stat"><b>${S.sen?Math.min(...Z.map(x=>x.so)).toFixed(0)+'%':'off'}</b><span>Driest zone average</span></div><div class="card stat"><b>${S.sen?'48/48':'0/48'}</b><span>Nodes online</span></div></div>${S.sen?'':'<div class="warn">Ground sensors are off. Soil moisture comes from a coarser satellite estimate, so scores react later.</div>'}<div class="g g3">${z.map(x=>`<div class="card ${S.sen?'':'off'}"><h3>${x.n} ${bd(x)}</h3><div class="bar"><i style="width:${x.so}%;background:var(--ac)"></i></div><div class="note">Zone average ${x.so.toFixed(0)}%</div><div class="nd">${x.nodes.map((n,k)=>`<div>${'ABC'[k]}<b>${x.nd[k].toFixed(0)}%</b>${n.b}% batt</div>`).join('')}</div></div>`).join('')}</div>`},
+sens(){const z=[...Z].sort((a,b)=>b.so-a.so);return`<div class="g g4"><div class="card stat"><b>${S.sen?Math.max(...Z.map(x=>x.so)).toFixed(0)+'%':'off'}</b><span>Wettest zone average</span></div><div class="card stat"><b>${S.sen?Math.min(...Z.map(x=>x.so)).toFixed(0)+'%':'off'}</b><span>Driest zone average</span></div><div class="card stat"><b>${S.sen?'48/48':'0/48'}</b><span>Nodes online (simulated)</span></div></div>${S.sen?'':'<div class="warn">Ground sensors are off. Soil moisture comes from a coarser satellite estimate, so scores react later.</div>'}<div class="g g3">${z.map(x=>`<div class="card ${S.sen?'':'off'}"><h3>${x.n} ${bd(x)}</h3><div class="bar"><i style="width:${x.so}%;background:var(--ac)"></i></div><div class="note">Zone average ${x.so.toFixed(0)}%</div><div class="nd">${x.nodes.map((n,k)=>`<div>${'ABC'[k]}<b>${x.nd[k].toFixed(0)}%</b>${n.b}% batt</div>`).join('')}</div></div>`).join('')}</div>`},
 sat(){const z=Z[S.sel];return`<div class="card" style="margin-bottom:12px"><h3>Zone</h3><select id="zs" aria-label="Zone" onchange="S.sel=+this.value;render()">${Z.map((x,i)=>`<option value="${i}"${i==S.sel?' selected':''}>${x.n}</option>`).join('')}</select><div class="note">The four layers cover the whole region. ${S.sat?'Satellite feeds are live.':'Satellite feeds are off, so these layers are frozen.'}</div></div>
 <div class="mini">${['sat','ndvi','rain','insar'].map(k=>`<div class="card"><h3>${MAPS[k]}</h3><canvas id="m_${k}" width="${W}" height="${H}"></canvas></div>`).join('')}</div>
 <div class="card sc" style="margin-top:12px"><h3>${z.n}: readings and GIS terrain</h3><table><tr><th>Source</th><th>Measure</th><th>Value</th></tr><tr><td>GPM IMERG</td><td>Rainfall, 24 h</td><td>${S.sat?Math.round(z.rain*(1+S.l*5.5)*.92+3)+' mm':'off'}</td></tr><tr><td>Sentinel-2</td><td>Vegetation index</td><td>${S.sat?'NDVI '+z.ndvi.toFixed(2):'off'}</td></tr><tr><td>Sentinel-1</td><td>Ground movement</td><td>${S.sat?z.ins.toFixed(1)+' mm / 12 d':'off'}</td></tr><tr><td>DEM</td><td>Slope</td><td>${z.sl}°</td></tr><tr><td>Slide inventory</td><td>Past slides nearby</td><td>${z.h}</td></tr><tr><td>Road map</td><td>Exposure</td><td>${IN[z.inf]}, ${z.rd}</td></tr><tr><td>Population</td><td>Exposure level</td><td>${EX[z.ex]}</td></tr></table></div>`},
@@ -495,7 +526,7 @@ const pro=()=>!!S.user&&S.user.r!='Public',ADV=['No action needed. Stay informed
 const tt=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}),lnk=m=>'sms:'+S.phone+'?&body='+encodeURIComponent(m);
 function demo(u){login(u,ACC[u].p)}
 function logout(){TOK='';S.user=null;S.pg='dash';$('lg').classList.remove('h');$('lu').focus()}
-function syncTop(){$('sen').setAttribute('aria-pressed',!!S.sen);$('sen').textContent='Ground sensors: '+(S.sen?'on':'off');$('sat').setAttribute('aria-pressed',!!S.sat);$('sat').textContent='Satellite: '+(S.sat?'on':'off');$('lv').setAttribute('aria-pressed',!!S.live);$('lv').textContent='Live feed: '+(S.live?'on':'off')}
+function syncTop(){$('sen').setAttribute('aria-pressed',!!S.sen);$('sen').textContent='Ground sensors: '+(S.sen?'on':'off');$('sat').setAttribute('aria-pressed',!!S.sat);$('sat').textContent='Satellite: '+(S.sat?'on':'off');$('lv').setAttribute('aria-pressed',!!S.live);$('lv').textContent='Auto-simulation: '+(S.live?'on':'off')}
 function sendSms(z,lv){if(!S.phone)return;const m='LANDSAFE '+LV[lv][0]+': '+z.n+'. '+MSG[S.lang],o={t:tt(),lv,m,st:'Queued'};S.out.unshift(o);S.out=S.out.slice(0,10);
 const ep=S.ep||(TOK&&pro()?'/send':'');if(ep){fetch(ep,{method:'POST',headers:{'Content-Type':'application/json',...(TOK&&ep.startsWith('/')?{Authorization:'Bearer '+TOK}:{})},body:JSON.stringify({to:S.phone,message:m})}).then(r=>{o.st=r.ok?'Sent to '+S.phone:'Backend refused ('+r.status+')'}).catch(()=>{o.st='Backend not reachable, use the link to send from your phone';o.link=lnk(m)}).finally(()=>render())}
 else{o.st='Ready: tap the link to send from your phone';o.link=lnk(m)}}
@@ -568,7 +599,7 @@ function pubD(){const z=[...Z].sort((a,b)=>b.sc-a.sc),L=PUBLIC_I18N[S.lang]||PUB
 return langBar()+`<div class="g g4"><div class="card stat"><b>${Z.filter(x=>x.lv>=2).length}</b><span>Zones at High or Critical</span></div><div class="card stat"><b>${Z.filter(x=>x.lv<2).length}</b><span>Zones at Low or Moderate</span></div></div><div class="card sc"><h3><span class="live"></span>${L.statusTitle}</h3><table><tr><th>${L.zone}</th><th>${L.state}</th><th>${L.risk}</th><th>${L.why}</th><th>${L.whatToDo}</th></tr>${z.map(x=>`<tr class="k" onclick="S.sel=${Z.indexOf(x)};go('map')"><td><b>${x.n}</b></td><td>${x.s}</td><td>${bd(x)}</td><td><span class="note" style="margin:0">${x.reasons?x.reasons[0]:'Normal conditions'}</span></td><td>${L.adv[x.lv]}</td></tr>`).join('')}</table><div class="note" style="margin-top:8px">${L.helpline}</div></div>`}
 function pubA(){const L=PUBLIC_I18N[S.lang]||PUBLIC_I18N.en;
 return`<div class="card"><h3>${L.statusTitle}</h3>${S.al.length?S.al.map(a=>`<div class="al" style="border-color:${LV[a.lv][1]}"><b>${a.t}</b> ${a.z}: ${LV[a.lv][0]}<br>${L.adv[a.lv]}</div>`).join(''):'<div class="note">No active alerts.</div>'}<div class="note">${L.helpline}</div></div>`}
-function mine(){const z=Z[S.user.zone],hot=z.lv>=2,L=PUBLIC_I18N[S.lang]||PUBLIC_I18N.en;
+function mine(){const z=Z[S.user.zone]||Z[0],hot=z.lv>=2,L=PUBLIC_I18N[S.lang]||PUBLIC_I18N.en;
 return langBar()+(hot?`<div class="warn" style="border-color:${LV[z.lv][1]}"><b>${z.n}: ${LV[z.lv][0]} (${L.risk})</b><br>${L.adv[z.lv]}</div>`:'')+`<div class="card" style="margin-bottom:12px"><h3>${L.myArea}: ${z.n} (${z.s})</h3><p>${bd(z)} ${tr(z)} &nbsp;·&nbsp; <b>${Math.round(z.rn)} mm</b> rain, <b>${z.so.toFixed(0)}%</b> soil saturation</p><p style="font-weight:600;color:var(--tx)">${L.adv[z.lv]}</p><div style="background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:10px 0"><small style="font-weight:600;font-size:13px;color:var(--mu);display:block;margin-bottom:4px">Primary risk factors:</small><ul style="margin:0;padding-left:18px;font-size:12.5px">${(z.reasons||[]).map(r=>`<li>${esc(r)}</li>`).join('')}</ul></div><div class="row"><button class="b p btn-safe" onclick="chk('safe')">${L.safeBtn}</button><button class="b btn-help" onclick="chk('help')">${L.helpBtn}</button>${S.user.phone?`<a href="sms:${S.user.phone}?&body=${encodeURIComponent('LANDSAFE '+LV[z.lv][0]+': '+z.n+'. '+L.adv[z.lv])}">${L.textSms}</a>`:''}</div>${lastChk()}</div>`}
 window.rstSim=function(){clearInterval(S.tm);S.l=0;$('storm').value=0;S.al=[];S.sent=0;Z.forEach(z=>z.lv=0);update()};
 window.toggleLowBw=function(){document.body.classList.toggle('low-bw');const on=document.body.classList.contains('low-bw');const btn=$('bw');if(btn){btn.setAttribute('aria-pressed',on);btn.textContent='Low-bandwidth: '+(on?'on':'off')}};
@@ -598,12 +629,12 @@ function banner(){const n=S.checks.filter(c=>c.k=='help'&&!c.d).length,p=S.reps.
 function checks(){return`<div class="card" style="margin-top:12px"><h3>Citizen check-ins (${S.checks.length})</h3>${S.checks.length?S.checks.map((c,i)=>`<div class="al" style="border-color:${c.k=='help'&&!c.d?'var(--r3)':'var(--r0)'}"><b>${c.t}</b> ${c.u} in ${c.z}: ${c.k=='safe'?'marked safe':c.d?'help request handled':'NEEDS HELP'}${c.k=='help'&&!c.d?` <button class="b" onclick="hand(${i})">Mark handled</button>`:''}</div>`).join(''):'<div class="note">No check-ins yet. Residents check in from their dashboard.</div>'}</div>`}
 function hand(i){const c=S.checks[i];c.d=1;if(TOK&&c.id)ap('PATCH','/api/checkins/'+c.id+'/handled').catch(()=>{});render()}
 function sendRep(){const zi=S.rz??S.user.zone,hz=S.rh||HZ[0],loc=()=>{S.reps.unshift({id:'LR-'+(1100+S.reps.length+1),zi,hz,u:S.user.n,t:tt(),st:'Pending'});render()};if(TOK)ap('POST','/api/reports',{zone:zi,hazard:hz}).then(r=>{S.reps.unshift(r);render()}).catch(loc);else loc()}
-function verify(i,ok){const r=S.reps[i];r.st=ok?'Verified':'Dismissed';if(TOK&&r.dbid)ap('PATCH','/api/reports/'+r.dbid,{status:r.st}).catch(()=>{});Z[r.zi].bonus=Math.min(15,6*S.reps.filter(x=>x.zi==r.zi&&x.st=='Verified').length);update()}
+function verify(i,ok){const r=S.reps[i];r.st=ok?'Verified':'Dismissed';if(TOK&&r.dbid)ap('PATCH','/api/reports/'+r.dbid,{status:r.st}).catch(()=>{});if(Z[r.zi])Z[r.zi].bonus=Math.min(15,6*S.reps.filter(x=>x.zi==r.zi&&x.st=='Verified').length);update()}
 function repPage(){const st=pro(),zi=S.rz??S.user.zone,rows=S.reps.map((r,i)=>[r,i]).filter(([r])=>st||r.u==S.user.n);
-const list=`<div class="card"><h3>${st?'Citizen reports':'My reports'} (${rows.length})</h3>${rows.length?rows.map(([r,i])=>`<div class="al" style="border-color:${r.st=='Verified'?'var(--r3)':r.st=='Pending'?'var(--r1)':'#94a3b8'}"><b>${r.id}</b> ${Z[r.zi].n}: ${r.hz}<br><span class="note">${esc(r.u)} at ${r.t}: ${r.st}</span>${st&&r.st=='Pending'?`<div class="row" style="margin-top:6px"><button class="b p" onclick="verify(${i},1)">Verify</button><button class="b" onclick="verify(${i},0)">Dismiss</button></div>`:''}</div>`).join(''):'<div class="note">No reports yet.</div>'}</div>`;
+const list=`<div class="card"><h3>${st?'Citizen reports':'My reports'} (${rows.length})</h3>${rows.length?rows.map(([r,i])=>`<div class="al" style="border-color:${r.st=='Verified'?'var(--r3)':r.st=='Pending'?'var(--r1)':'#94a3b8'}"><b>${esc(r.id)}</b> ${esc((Z[r.zi]||{n:'Unknown zone'}).n)}: ${esc(r.hz)}<br><span class="note">${esc(r.u)} at ${r.t}: ${r.st}</span>${st&&r.st=='Pending'?`<div class="row" style="margin-top:6px"><button class="b p" onclick="verify(${i},1)">Verify</button><button class="b" onclick="verify(${i},0)">Dismiss</button></div>`:''}</div>`).join(''):'<div class="note">No reports yet.</div>'}</div>`;
 if(st)return list;
 return`<div class="split"><div class="card"><h3>Report what you see</h3><label for="rz">Area</label><select id="rz" onchange="S.rz=+this.value">${Z.map((x,i)=>`<option value="${i}"${i==zi?' selected':''}>${x.n}</option>`).join('')}</select><label for="rh">What did you notice?</label><select id="rh" onchange="S.rh=this.value">${HZ.map(h=>`<option${h==S.rh?' selected':''}>${h}</option>`).join('')}</select><div class="row" style="margin-top:8px"><button class="b p" onclick="sendRep()">Submit report</button></div><div class="note">Officers review reports. A confirmed report raises that area's risk score.</div></div>${list}</div>`}
-function users(){const L=TOK?(S.ul||{}):LU,ks=Object.keys(L);return`<div class="card" style="margin-top:12px"><h3>Registered accounts (${ks.length})</h3>${ks.length?ks.map(k=>`<div class="al" style="border-color:var(--ac)"><b>${esc(L[k].name)}</b> (${k}) in ${Z[L[k].zone].n}: ${L[k].r} <button class="b" onclick="setRole('${k}')">${L[k].r=='Public'?'Make Field Officer':'Make Public'}</button> <button class="b" onclick="delU('${k}')">Remove</button></div>`).join(''):'<div class="note">No sign-ups yet. New users can create an account on the login page.</div>'}</div>`}
+function users(){const L=TOK?(S.ul||{}):LU,ks=Object.keys(L);return`<div class="card" style="margin-top:12px"><h3>Registered accounts (${ks.length})</h3>${ks.length?ks.map(k=>`<div class="al" style="border-color:var(--ac)"><b>${esc(L[k].name)}</b> (${k}) in ${(Z[L[k].zone]||{n:'Unknown zone'}).n}: ${L[k].r} <button class="b" onclick="setRole('${k}')">${L[k].r=='Public'?'Make Field Officer':'Make Public'}</button> <button class="b" onclick="delU('${k}')">Remove</button></div>`).join(''):'<div class="note">No sign-ups yet. New users can create an account on the login page.</div>'}</div>`}
 function setRole(k){if(TOK){const nr=S.ul[k].r=='Public'?'Field Officer':'Public';ap('PATCH','/api/users/'+k+'/role',{role:nr}).then(()=>{S.ul[k].r=nr;render()}).catch(()=>{});return}LU[k].r=LU[k].r=='Public'?'Field Officer':'Public';saveU();render()}
 function delU(k){if(TOK){ap('DELETE','/api/users/'+k).then(()=>{delete S.ul[k];render()}).catch(()=>{});return}delete LU[k];saveU();render()}
 const _d=P.dash,_a=P.alerts,_s=P.set;P.dash=()=>pro()?banner()+_d():mine()+pubD();P.alerts=()=>pro()?_a()+checks()+outbox():pubA();P.set=()=>_s()+users();P.rep=repPage;
@@ -683,12 +714,13 @@ const srcStatus=s=>{const n=liveN(s.k);return n?`<span class="bd bd-src on">${n}
 window.runBacktestUI = async function() {
   const el = $('bt_res');
   if (!el) return;
-  el.textContent = 'Executing backtest across 142 NASA GLC catalog events…';
+  el.textContent = 'Loading the server calibration summary…';
   try {
-    const res = await fetch('/api/backtest').then(r => r.json());
-    el.innerHTML = `<b>${res.summary}</b><br><span class="note">Detection Hit Rate: <b>${res.hitRatePct}%</b> (${res.eventsDetected}/${res.totalEvents} events flagged). Mean risk score during slides: <b>${res.meanScore}%</b>. Calibrated on Eastern Himalayas NASA GLC data.</span>`;
+    const r = await fetch('/api/backtest').then(x => { if (!x.ok) throw new Error('HTTP ' + x.status); return x.json(); });
+    const n = r.sampleSize != null ? r.sampleSize : r.totalEvents, fl = r.flaggedEvents != null ? r.flaggedEvents : r.eventsDetected;
+    window.__btHtml = el.innerHTML = `<b>Calibration summary from the server</b><br><span class="note">Hit rate: <b>${esc(r.hitRatePct)}%</b> over ${esc(n)} catalog events${fl != null ? ' (' + esc(fl) + ' flagged)' : ''}. ${esc(r.citation || '')}</span><br><span class="note">Reported figure, not recomputed in the browser. Treat it as indicative until independently validated.</span>`;
   } catch (e) {
-    el.textContent = 'Backtest verified: 89.4% historical GLC hit rate (127/142 events flagged).';
+    window.__btHtml = null; el.textContent = 'Calibration summary unavailable (' + e.message + ').';
   }
 };
 P.src=()=>`<div class="card sc" style="margin-bottom:12px"><h3>Connected sources</h3><table><tr><th>Source</th><th>Dataset</th><th>Feeds</th><th>Resolution, revisit</th><th>Status</th></tr>${SRC.map(s=>`<tr><td><b>${s.n}</b></td><td>${s.p}</td><td>${s.f}</td><td>${s.r}</td><td>${srcStatus(s)}</td></tr>`).join('')}</table><div class="note">Zone scores use the values in the table at the bottom. The raster layers on the map pages stay schematic. Ground soil-moisture nodes are still simulated until real ESP32 data is wired in.</div></div>
@@ -696,11 +728,11 @@ P.src=()=>`<div class="card sc" style="margin-bottom:12px"><h3>Connected sources
 <h3>How the risk score is explained, and how it held up against past landslides</h3>
 <p>Our scoring model implements empirical slope-adjusted rainfall intensity-duration thresholds: <code>I_crit = max(25, 75 - (slope - 15) * 0.8) mm/24h</code>, volumetric soil liquefaction thresholds (&ge;75%), and Sentinel-1 InSAR surface displacement velocity.</p>
 <div class="row" style="margin-bottom:8px">
-<button class="b p" onclick="runBacktestUI()">Run Live NASA GLC Backtest</button>
-<span class="note">Validates model against 142 historical landslide events across the Eastern Himalayas</span>
+<button class="b p" onclick="runBacktestUI()">Show calibration summary</button>
+<span class="note">Reads the summary reported by /api/backtest</span>
 </div>
 <div id="bt_res" style="background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;font-size:13px">
-<b>Historical Validation Status:</b> 89.4% detection rate (127/142 events flagged at High or Critical during recorded storm events). Mean event risk score: 78.4%.
+<b>Calibration reference:</b> 89.4% detection rate (127/142 NASA GLC events flagged at High or Critical). Indicative, not independently validated.
 </div>
 </div>
 <div class="split" style="margin-bottom:12px"><div class="card"><h3>Quick connect (no account needed)</h3><div class="row"><button class="b p" onclick="connDEM()">Connect Copernicus DEM</button><button class="b p" onclick="connRain()">Connect rainfall</button><button class="b" onclick="resetSrc()">Back to demo data</button></div><p>DEM: elevation from Copernicus GLO-90, slope calculated from five points around each zone.</p><p>Rainfall: precipitation over the last 24 hours from Open-Meteo. It stands in for GPM or CHIRPS, which come through the feed.</p><div class="note">Needs internet. Connecting real data switches the live simulation off and resets storm intensity to 0, so scores show real conditions. Raise the slider for a what-if on top.</div></div>
@@ -789,4 +821,62 @@ window.AR={page,confirm:doConfirm,tick,widen,reset,zone:v=>{A.z=+v;refresh()},r:
 PG.splice(6,0,['rng','Alert Range','◎']);['Admin','Field Officer','Public'].forEach(r=>RP[r].push('rng'));
 HERO.rng=['🚨','Alert range and area safety','Safety steps for people nearby, a wider warning ring beyond the confirmed danger range, and regular updates on whether the area is safe to live in.',['Safety steps','Wider warning ring','Safe-to-live updates']];
 P.rng=()=>AR.page();
-</script></body></html>
+</script>
+<script id="ui-polish">
+/* Presentation layer: status strip, demo guide, risk legend. Reads existing state only. */
+(function () {
+  var INPUTS = [['Rainfall', 'rain'], ['Slope (DEM)', 'sl'], ['Past slides', 'h'], ['Soil moisture', 'so'], ['Ground movement', 'iv'], ['Vegetation (NDVI)', 'nv']];
+  var guideOpen = true;
+  try { guideOpen = sessionStorage.getItem('ls_guide') !== '0'; } catch (e) {}
+  window.__guideToggle = function (o) { guideOpen = o; try { sessionStorage.setItem('ls_guide', o ? '1' : '0'); } catch (e) {} };
+
+  function strip() {
+    var n = Z.length, any = false;
+    var chips = INPUTS.map(function (a) {
+      var c = liveN(a[1]); if (c) any = true;
+      var txt = c ? (c == n ? 'live' : c + '/' + n + ' live') : 'demo';
+      return '<span class="bd bd-src' + (c ? ' on' : ' sim') + '" title="' + (c ? c + ' of ' + n + ' zones come from a connected source' : 'Demo value. No source connected.') + '">' + a[0] + ': ' + txt + '</span>';
+    }).join('') + '<span class="bd bd-src sim" title="Soil-moisture nodes are simulated until real ESP32 telemetry is connected.">Sensor nodes: simulated</span>';
+    var mode = any ? 'Mixed data: some inputs are live' : 'Demo mode: all values are simulated';
+    if (S.l > 0.01) mode += ' · storm simulation at ' + Math.round(S.l * 100) + '%';
+    var full = pro() && (S.pg == 'dash' || S.pg == 'src');
+    return '<div class="dstat" role="status"><b>' + mode + '</b>' + (full ? '<div class="row">' + chips + '</div>' : '') + '<span class="note">Updated ' + tt() + (pro() ? ' · connect real sources under Data Sources' : '') + '</span></div>';
+  }
+
+  function guide() {
+    return '<details class="guide"' + (guideOpen ? ' open' : '') + ' ontoggle="__guideToggle(this.open)"><summary>60-second demo guide</summary><div class="gb"><ol>' +
+      '<li>Press <b>Simulate storm</b> and watch zones climb from Low to Critical.</li>' +
+      '<li>Open a zone on the <b>Risk Map</b>. <i>Why this zone is flagged</i> lists the actual triggers.</li>' +
+      '<li>Open <b>SMS Alerts</b> to see the dispatch log and the resident\'s phone in four languages.</li>' +
+      '<li>Open <b>Alert Range</b>, confirm a landslide, and see who is warned and who is told to leave.</li></ol>' +
+      '<div class="row"><button class="b p" onclick="__guideToggle(false);document.getElementById(\'sim\').click()">&#9654; Simulate storm</button><button class="b" onclick="go(\'map\')">Risk map</button><button class="b" onclick="go(\'alerts\')">SMS alerts</button><button class="b" onclick="go(\'rng\')">Alert range</button></div></div></details>';
+  }
+
+  function legend() {
+    return '<div class="rlg" aria-label="Risk levels">' + LV.map(function (l, i) {
+      return '<span><span class="bd ' + BD_CLS[i] + '">' + BD_SYM[i] + ' ' + l[0] + '</span> ' + TH[i] + (i < 3 ? '–' + (TH[i + 1] - 1) : '–100') + '%</span>';
+    }).join('') + '</div>';
+  }
+
+  var base = window.render;
+  window.render = function () {
+    base();
+    try {
+      if (!S.user) return;
+      var bt = document.getElementById('bt_res'); if (bt && window.__btHtml) bt.innerHTML = window.__btHtml;
+      var hero = document.querySelector('#pg .hero'); if (!hero) return;
+      var h = strip();
+      if (S.pg == 'dash' && pro()) h += guide();
+      hero.insertAdjacentHTML('afterend', h);
+      if (S.pg == 'map') { var m = document.querySelector('#pg .mapw'); if (m) m.insertAdjacentHTML('afterend', legend()); }
+    } catch (e) { console.warn('ui-polish', e); }
+  };
+
+  /* Shareable demo links: /?demo=officer, /?demo=admin, /?demo=public */
+  try {
+    var d = new URLSearchParams(location.search).get('demo');
+    if (d && ACC[d]) setTimeout(function () { demo(d); }, 50);
+  } catch (e) {}
+})();
+</script>
+</body></html>
